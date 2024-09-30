@@ -11,25 +11,30 @@ import (
 	"time"
 )
 
+type Pokemon struct {
+	Name  string   `json:"name"`
+	Forms []string `json:"forms"`
+}
+
 const (
-	shinyRate         = 1.0 / 128.0
-	programDir        = "./" // Update this to the appropriate directory if necessary
-	colorscriptsDir   = "./assets/colorscripts"
-	regularSubdir     = "regular"
-	shinySubdir       = "shiny"
-	largeSubdir       = "large"
-	smallSubdir       = "small"
+	shinyRate       = 1.0 / 128.0
+	programDir      = "./" // Update this to the appropriate directory if necessary
+	colorscriptsDir = "./assets/colorscripts"
+	regularSubdir   = "regular"
+	shinySubdir     = "shiny"
+	largeSubdir     = "large"
+	smallSubdir     = "small"
 )
 
 var generations = map[string][2]int{
-	"1":  {1, 151},
-	"2":  {152, 251},
-	"3":  {252, 386},
-	"4":  {387, 493},
-	"5":  {494, 649},
-	"6":  {650, 721},
-	"7":  {722, 809},
-	"8":  {810, 898},
+	"1": {1, 151},
+	"2": {152, 251},
+	"3": {252, 386},
+	"4": {387, 493},
+	"5": {494, 649},
+	"6": {650, 721},
+	"7": {722, 809},
+	"8": {810, 898},
 }
 
 func printFile(filepath string) {
@@ -41,20 +46,22 @@ func printFile(filepath string) {
 	fmt.Print(string(content))
 }
 
-func listPokemonNames() {
+func readPokemonJSON() []Pokemon {
 	file, err := os.ReadFile(filepath.Join(programDir, "./assets/pokemon.json"))
 	if err != nil {
 		fmt.Println("Error reading pokemon.json:", err)
-		return
 	}
 
-	var pokemon []struct {
-		Name string `json:"name"`
-	}
+	var pokemon []Pokemon
+
 	if err := json.Unmarshal(file, &pokemon); err != nil {
-		fmt.Println("Error parsing JSON:", err)
-		return
+		panic(err)
 	}
+	return pokemon
+}
+
+func listPokemonNames() {
+	pokemon := readPokemonJSON()
 
 	for _, p := range pokemon {
 		fmt.Println(p.Name)
@@ -72,20 +79,7 @@ func showPokemonByName(name string, showTitle, shiny, isLarge bool, form string)
 		sizeSubdir = largeSubdir
 	}
 
-	file, err := os.ReadFile(filepath.Join(programDir, "./assets/pokemon.json"))
-	if err != nil {
-		fmt.Println("Error reading pokemon.json:", err)
-		return
-	}
-
-	var pokemon []struct {
-		Name   string   `json:"name"`
-		Forms  []string `json:"forms"`
-	}
-	if err := json.Unmarshal(file, &pokemon); err != nil {
-		fmt.Println("Error parsing JSON:", err)
-		return
-	}
+	pokemon := readPokemonJSON()
 
 	pokemonNames := make(map[string]struct{})
 	for _, p := range pokemon {
@@ -144,19 +138,7 @@ func showRandomPokemon(generationsStr string, showTitle, shiny, isLarge bool) {
 		endGen = startGen
 	}
 
-	file, err := os.ReadFile(filepath.Join(programDir, "./assets/pokemon.json"))
-	if err != nil {
-		fmt.Println("Error reading pokemon.json:", err)
-		return
-	}
-
-	var pokemon []struct {
-		Name string `json:"name"`
-	}
-	if err := json.Unmarshal(file, &pokemon); err != nil {
-		fmt.Println("Error parsing JSON:", err)
-		return
-	}
+	pokemon := readPokemonJSON()
 
 	startIdx, ok := generations[startGen]
 	if !ok {
