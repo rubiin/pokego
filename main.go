@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 type Pokemon struct {
@@ -122,7 +121,6 @@ func showPokemonByName(name string, showTitle, shiny, isLarge bool, form string)
 }
 
 func showRandomPokemon(generationsStr string, showTitle, shiny, isLarge bool) {
-	rand.Seed(time.Now().UnixNano())
 
 	var startGen, endGen string
 	genList := strings.Split(generationsStr, ",")
