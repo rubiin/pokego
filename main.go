@@ -14,7 +14,7 @@ import (
 const (
 	shinyRate         = 1.0 / 128.0
 	programDir        = "./" // Update this to the appropriate directory if necessary
-	colorscriptsDir   = "colorscripts"
+	colorscriptsDir   = "./assets/colorscripts"
 	regularSubdir     = "regular"
 	shinySubdir       = "shiny"
 	largeSubdir       = "large"
@@ -42,7 +42,7 @@ func printFile(filepath string) {
 }
 
 func listPokemonNames() {
-	file, err := os.ReadFile(filepath.Join(programDir, "pokemon.json"))
+	file, err := os.ReadFile(filepath.Join(programDir, "./assets/pokemon.json"))
 	if err != nil {
 		fmt.Println("Error reading pokemon.json:", err)
 		return
@@ -72,7 +72,7 @@ func showPokemonByName(name string, showTitle, shiny, isLarge bool, form string)
 		sizeSubdir = largeSubdir
 	}
 
-	file, err := os.ReadFile(filepath.Join(programDir, "pokemon.json"))
+	file, err := os.ReadFile(filepath.Join(programDir, "./assets/pokemon.json"))
 	if err != nil {
 		fmt.Println("Error reading pokemon.json:", err)
 		return
@@ -144,7 +144,7 @@ func showRandomPokemon(generationsStr string, showTitle, shiny, isLarge bool) {
 		endGen = startGen
 	}
 
-	file, err := os.ReadFile(filepath.Join(programDir, "pokemon.json"))
+	file, err := os.ReadFile(filepath.Join(programDir, "./assets/pokemon.json"))
 	if err != nil {
 		fmt.Println("Error reading pokemon.json:", err)
 		return
