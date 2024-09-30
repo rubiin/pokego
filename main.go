@@ -48,7 +48,7 @@ func printFile(filepath string) {
 func readPokemonJSON() []Pokemon {
 	file, err := os.ReadFile(filepath.Join(programDir, "./assets/pokemon.json"))
 	if err != nil {
-		fmt.Println("Error reading pokemon.json:", err)
+		panic(err)
 	}
 
 	var pokemon []Pokemon
