@@ -49,15 +49,20 @@ OPTIONS:
     -h, --help       Print help information
 
 SUBCOMMANDS:
-    help      Print this message or the help of the given subcommand(s)
-    list      Print list of all pokemon
-    name      Select pokemon by name. Generally spelled like in the games. A few exceptions are
-                  nidoran-f, nidoran-m, mr-mime, farfetchd, flabebe type-null etc. Perhaps grep the
-                  output of list if in doubt
-    random    Show a random pokemon. This command can optionally be followed by a generation
-                  number or range (1-8) to show random pokemon from a specific generation or range
-                  of generations. The generations can be provided as a continuous range (eg. 1-3) or
-                  as a list of generations (1,3,6)
+  -big
+        Show a larger version of the sprite
+  -form string
+        Show an alternate form of a pokemon
+  -list
+        Print list of all pokemon
+  -name string
+        Select pokemon by name
+  -no-title
+        Do not display pokemon name
+  -random string
+        Show a random pokemon. This flag can optionally be followed by a generation number or range (default "1-8")
+  -shiny
+        Show the shiny version of the pokemon instead
 ```
 
 To get the help of the random subcommand.
