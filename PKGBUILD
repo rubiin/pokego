@@ -7,7 +7,7 @@ pkgdesc="CLI utility that prints unicode sprites of pokemon to the terminal"
 arch=('any')
 url="https://github.com/rubiin/pokego.git"
 license=("GPL-3.0")
-depends=('coreutils' 'go')
+depends=('coreutils' 'go' 'upx')
 makedepends=('git')
 source=("$_pkgname::git+$url")
 md5sums=('SKIP')
@@ -20,6 +20,7 @@ pkgver() {
 build() {
     cd "$_pkgname"
     go build -o pokego
+    upx pokego
 }
 
 package() {
