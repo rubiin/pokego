@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"embed"
 	"flag"
 	"fmt"
 	"math/rand"
@@ -10,21 +11,26 @@ import (
 	"strings"
 )
 
+// Pokemon struct represents the data structure for a Pokémon
 type Pokemon struct {
 	Name  string   `json:"name"`
 	Forms []string `json:"forms"`
 }
 
+// Embed assets directory
+//go:embed assets/*
+var assets embed.FS
+
 const (
 	shinyRate       = 1.0 / 128.0
-	programDir      = "./" // Update this to the appropriate directory if necessary
-	colorscriptsDir = "./assets/colorscripts"
+	colorscriptsDir = "colorscripts"
 	regularSubdir   = "regular"
 	shinySubdir     = "shiny"
 	largeSubdir     = "large"
 	smallSubdir     = "small"
 )
 
+// Generation ranges for Pokémon
 var generations = map[string][2]int{
 	"1": {1, 151},
 	"2": {152, 251},
@@ -36,8 +42,9 @@ var generations = map[string][2]int{
 	"8": {810, 898},
 }
 
+// printFile prints the content of the specified file
 func printFile(filepath string) {
-	content, err := os.ReadFile(filepath)
+	content, err := assets.ReadFile(filepath)
 	if err != nil {
 		fmt.Println("Error reading file:", err)
 		return
@@ -45,28 +52,29 @@ func printFile(filepath string) {
 	fmt.Print(string(content))
 }
 
+// readPokemonJSON reads the pokemon.json file from the embedded assets
 func readPokemonJSON() []Pokemon {
-	file, err := os.ReadFile(filepath.Join(programDir, "./assets/pokemon.json"))
+	file, err := assets.ReadFile("assets/pokemon.json")
 	if err != nil {
 		panic(err)
 	}
 
 	var pokemon []Pokemon
-
 	if err := json.Unmarshal(file, &pokemon); err != nil {
 		panic(err)
 	}
 	return pokemon
 }
 
+// listPokemonNames lists the names of all Pokémon
 func listPokemonNames() {
 	pokemon := readPokemonJSON()
-
 	for _, p := range pokemon {
 		fmt.Println(p.Name)
 	}
 }
 
+// showPokemonByName displays Pokémon information based on its name
 func showPokemonByName(name string, showTitle, shiny, isLarge bool, form string) {
 	colorSubdir := regularSubdir
 	if shiny {
@@ -79,8 +87,8 @@ func showPokemonByName(name string, showTitle, shiny, isLarge bool, form string)
 	}
 
 	pokemon := readPokemonJSON()
-
 	pokemonNames := make(map[string]struct{})
+
 	for _, p := range pokemon {
 		pokemonNames[p.Name] = struct{}{}
 	}
@@ -109,7 +117,7 @@ func showPokemonByName(name string, showTitle, shiny, isLarge bool, form string)
 		name += "-" + form
 	}
 
-	pokemonFile := filepath.Join(colorscriptsDir, sizeSubdir, colorSubdir, name)
+	pokemonFile := filepath.Join("assets", colorscriptsDir, sizeSubdir, colorSubdir, name)
 	if showTitle {
 		if shiny {
 			fmt.Printf("%s (shiny)\n", name)
@@ -120,8 +128,8 @@ func showPokemonByName(name string, showTitle, shiny, isLarge bool, form string)
 	printFile(pokemonFile)
 }
 
+// showRandomPokemon displays a random Pokémon based on specified generations
 func showRandomPokemon(generationsStr string, showTitle, shiny, isLarge bool) {
-
 	var startGen, endGen string
 	genList := strings.Split(generationsStr, ",")
 
@@ -137,7 +145,6 @@ func showRandomPokemon(generationsStr string, showTitle, shiny, isLarge bool) {
 	}
 
 	pokemon := readPokemonJSON()
-
 	startIdx, ok := generations[startGen]
 	if !ok {
 		fmt.Printf("Invalid generation '%s'\n", generationsStr)
@@ -159,6 +166,7 @@ func showRandomPokemon(generationsStr string, showTitle, shiny, isLarge bool) {
 	showPokemonByName(randomPokemon, showTitle, shiny, isLarge, "")
 }
 
+// contains checks if a slice contains a specific item
 func contains(slice []string, item string) bool {
 	for _, v := range slice {
 		if v == item {
@@ -168,6 +176,7 @@ func contains(slice []string, item string) bool {
 	return false
 }
 
+// main function to handle command-line flags and execute appropriate actions
 func main() {
 	listPtr := flag.Bool("list", false, "Print list of all pokemon")
 	namePtr := flag.String("name", "", "Select pokemon by name")
