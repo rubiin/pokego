@@ -29,7 +29,7 @@ Go version of phoney badger's [pokemon-colorscripts](https://gitlab.com/phoneyba
 From the AUR using your favorite AUR helper
 
 ```sh
-yay -S pokego-git
+yay -S pokego-bin
 ```
 
 Or alternatively you can manually download the PKGBUILD file from the repository, then run
@@ -37,6 +37,8 @@ Or alternatively you can manually download the PKGBUILD file from the repository
 ```sh
 makepkg -si
 ```
+
+There is also the development package [pokego-git](https://aur.archlinux.org/packages/pokego-bin) that tracks the main branch.
 
 ## Usage
 Run the help command `pokego --help` to see the following help message.
