@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# Define the application name
-APP_NAME="poke_palette"
+APP_NAME="pokego"
 
 # Create output directories
 mkdir -p builds/windows
