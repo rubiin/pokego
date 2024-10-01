@@ -5,7 +5,7 @@ pkgrel=1
 pkgdesc="CLI utility that prints unicode sprites of pokemon to the terminal"
 arch=('any')
 url="https://github.com/rubiin/pokego.git"
-license=('MIT')
+license=("GPL-3.0")
 depends=('coreutils' 'go')
 makedepends=('git')
 source=("$_pkgname::git+$url")
@@ -23,6 +23,7 @@ build() {
 
 package() {
 	  cd "$_pkgname"
-    rm -rf "$pkgdir/usr/bin/$_pkgname"
     install -Dm755 pokego "$pkgdir/usr/bin/pokego"
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
 }
