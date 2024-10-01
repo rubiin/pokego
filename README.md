@@ -1,8 +1,12 @@
 # pokego
 
+
 ![AUR version](https://img.shields.io/aur/version/pokego-git)
 
+
 Go version of phoney badger's [pokemon-colorscripts](https://gitlab.com/phoneybadger/pokemon-colorscripts) , with a boost on speed
+
+<img src="logo.png" height=300>
 
 
 ## Table of contents
@@ -24,12 +28,13 @@ Go version of phoney badger's [pokemon-colorscripts](https://gitlab.com/phoneyba
 
 From the AUR using your favorite AUR helper
 
-```
+```sh
 yay -S pokego-git
 ```
 
 Or alternatively you can manually download the PKGBUILD file from the repository, then run
-```
+
+```sh
 makepkg -si
 ```
 
