@@ -1,7 +1,6 @@
-# Maintainer: Phoney Badger <phoneybadgercode.4ikc7 at simplelogin.co>
+# Maintainer: Rubin Bhandari <roobin.bhandari@gmail.com>
 pkgname=pokego-git
 _pkgname=pokego
-pkgver=r8.76ddd43b
 pkgrel=1
 pkgdesc="CLI utility that prints unicode sprites of pokemon to the terminal"
 arch=('any')
@@ -19,21 +18,11 @@ pkgver() {
 
 build() {
     cd "$_pkgname"
-    go build -o pokego main.go
+    go build -o pokego
 }
 
 package() {
 	  cd "$_pkgname"
-    # Creating necessary directories and copying files
-    rm -rf "$pkgdir/usr/local/opt/$_pkgname"
-    mkdir -p "$pkgdir/usr/local/opt/$_pkgname/assets/colorscripts/regular"
-    mkdir -p "$pkgdir/usr/local/opt/$_pkgname/assets/colorscripts/shiny"
+    rm -rf "$pkgdir/usr/bin/$_pkgname"
     install -Dm755 pokego "$pkgdir/usr/bin/pokego"
-    install -Dm644 assets/colorscripts/small/regular/* -t "$pkgdir/usr/local/opt/$_pkgname/assets/colorscripts/small/regular"
-    install -Dm644 assets/colorscripts/small/shiny/* -t "$pkgdir/usr/local/opt/$_pkgname/assets/colorscripts/small/shiny"
-    install -Dm644 assets/colorscripts/large/regular/* -t "$pkgdir/usr/local/opt/$_pkgname/assets/colorscripts/large/regular"
-    install -Dm644 assets/colorscripts/large/shiny/* -t "$pkgdir/usr/local/opt/$_pkgname/assets/colorscripts/large/shiny"
-    install -Dm644 assets/pokemon.json "$pkgdir/usr/local/opt/$_pkgname/pokemon.json"
-    # install -Dm644 LICENSE.txt "$pkgdir/usr/share/licenses/$_pkgname/LICENSE"
-    install -Dm644 README.md "$pkgdir/usr/share/doc/$_pkgname/README.md"
 }
