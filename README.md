@@ -26,6 +26,7 @@ Go version of phoney badger's [pokemon-colorscripts](https://gitlab.com/phoneyba
 
 ## Installation
 
+### Arch
 From the AUR using your favorite AUR helper
 
 ```sh
@@ -37,6 +38,10 @@ Or alternatively you can manually download the PKGBUILD file from the repository
 ```sh
 makepkg -si
 ```
+### For other Linux Distributions
+Download the latest release. Unzip the executable, and move it to `/usr/bin`
+
+
 
 There is also the development package [pokego-git](https://aur.archlinux.org/packages/pokego-bin) that tracks the main branch.
 
@@ -51,8 +56,6 @@ OPTIONS:
     -h, --help       Print help information
 
 SUBCOMMANDS:
-  -big
-        Show a larger version of the sprite
   -form string
         Show an alternate form of a pokemon
   -list
