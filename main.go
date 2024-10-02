@@ -26,8 +26,6 @@ const (
 	colorscriptsDir = "colorscripts"
 	regularSubdir   = "regular"
 	shinySubdir     = "shiny"
-	largeSubdir     = "large"
-	smallSubdir     = "small"
 )
 
 // Generation ranges for Pokémon
@@ -75,16 +73,12 @@ func listPokemonNames() {
 }
 
 // showPokemonByName displays Pokémon information based on its name
-func showPokemonByName(name string, showTitle, shiny, isLarge bool, form string) {
+func showPokemonByName(name string, showTitle, shiny bool, form string) {
 	colorSubdir := regularSubdir
 	if shiny {
 		colorSubdir = shinySubdir
 	}
 
-	sizeSubdir := smallSubdir
-	if isLarge {
-		sizeSubdir = largeSubdir
-	}
 
 	pokemon := readPokemonJSON()
 	pokemonNames := make(map[string]struct{})
@@ -117,7 +111,7 @@ func showPokemonByName(name string, showTitle, shiny, isLarge bool, form string)
 		name += "-" + form
 	}
 
-	pokemonFile := filepath.Join("assets", colorscriptsDir, sizeSubdir, colorSubdir, name)
+	pokemonFile := filepath.Join("assets", colorscriptsDir, colorSubdir, name)
 	if showTitle {
 		if shiny {
 			fmt.Printf("%s (shiny)\n", name)
@@ -129,7 +123,7 @@ func showPokemonByName(name string, showTitle, shiny, isLarge bool, form string)
 }
 
 // showRandomPokemon displays a random Pokémon based on specified generations
-func showRandomPokemon(generationsStr string, showTitle, shiny, isLarge bool) {
+func showRandomPokemon(generationsStr string, showTitle, shiny bool) {
 	var startGen, endGen string
 	genList := strings.Split(generationsStr, ",")
 
@@ -163,7 +157,7 @@ func showRandomPokemon(generationsStr string, showTitle, shiny, isLarge bool) {
 	if !shiny && rand.Float64() <= shinyRate {
 		shiny = true
 	}
-	showPokemonByName(randomPokemon, showTitle, shiny, isLarge, "")
+	showPokemonByName(randomPokemon, showTitle, shiny, "")
 }
 
 // contains checks if a slice contains a specific item
@@ -183,7 +177,6 @@ func main() {
 	formPtr := flag.String("form", "", "Show an alternate form of a pokemon")
 	noTitlePtr := flag.Bool("no-title", false, "Do not display pokemon name")
 	shinyPtr := flag.Bool("shiny", false, "Show the shiny version of the pokemon instead")
-	bigPtr := flag.Bool("big", false, "Show a larger version of the sprite")
 	randomPtr := flag.String("random", "1-8", "Show a random pokemon. This flag can optionally be followed by a generation number or range")
 
 	flag.Parse()
@@ -191,13 +184,13 @@ func main() {
 	if *listPtr {
 		listPokemonNames()
 	} else if *namePtr != "" {
-		showPokemonByName(*namePtr, !*noTitlePtr, *shinyPtr, *bigPtr, *formPtr)
+		showPokemonByName(*namePtr, !*noTitlePtr, *shinyPtr, *formPtr)
 	} else if *randomPtr != "" {
 		if *formPtr != "" {
 			fmt.Println("--form flag unexpected with --random")
 			os.Exit(1)
 		}
-		showRandomPokemon(*randomPtr, !*noTitlePtr, *shinyPtr, *bigPtr)
+		showRandomPokemon(*randomPtr, !*noTitlePtr, *shinyPtr)
 	} else {
 		flag.Usage()
 	}
