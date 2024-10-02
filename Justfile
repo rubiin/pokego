@@ -1,3 +1,4 @@
+set dotenv-required
 
 # prints all available commands
 default:
@@ -17,12 +18,13 @@ create-dirs:
 
 build:
 	echo "Building for Windows..."
-	GOOS=windows GOARCH=amd64 go build -ldflags "-s -w -X 'main.version=${{version}}'" -o builds/windows/pokego.exe main.go
+	GOOS=windows GOARCH=amd64 go build -ldflags "-s -w -X 'main.version=$VERSION'" -o builds/windows/pokego.exe main.go
 	upx builds/windows/pokego.exe
 
 	echo "Building for macOS..."
-	GOOS=darwin GOARCH=amd64 go build -ldflags "-s -w -X 'main.version=${{version}}'" -o builds/macos/pokego main.go
+	GOOS=darwin GOARCH=amd64 go build -ldflags "-s -w -X 'main.version=$VERSION'" -o builds/macos/pokego main.go
 
 	echo "Building for Linux..."
-	GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X 'main.version=${{version}}'" -o builds/linux/pokego main.go
+	GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X 'main.version=$VERSION'" -o builds/linux/pokego main.go
 	upx builds/linux/pokego
+
