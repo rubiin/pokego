@@ -17,6 +17,10 @@ type Pokemon struct {
 	Forms []string `json:"forms"`
 }
 
+var (
+	version   string
+)
+
 // Embed assets directory
 //go:embed assets/*
 var assets embed.FS
@@ -178,12 +182,14 @@ func main() {
 	noTitlePtr := flag.Bool("no-title", false, "Do not display pokemon name")
 	shinyPtr := flag.Bool("shiny", false, "Show the shiny version of the pokemon instead")
 	randomPtr := flag.String("random", "1-8", "Show a random pokemon. This flag can optionally be followed by a generation number or range")
-
+	versionPtr := flag.Bool("version", false, "Show the cli version")
 	flag.Parse()
 
 	if *listPtr {
 		listPokemonNames()
-	} else if *namePtr != "" {
+	}else if *versionPtr {
+		fmt.Println(version)
+	}else if *namePtr != "" {
 		showPokemonByName(*namePtr, !*noTitlePtr, *shinyPtr, *formPtr)
 	} else if *randomPtr != "" {
 		if *formPtr != "" {
@@ -191,7 +197,7 @@ func main() {
 			os.Exit(1)
 		}
 		showRandomPokemon(*randomPtr, !*noTitlePtr, *shinyPtr)
-	} else {
+	}else {
 		flag.Usage()
 	}
 }
