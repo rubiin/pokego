@@ -27,7 +27,7 @@ Go version of phoney badger's [pokemon-colorscripts](https://gitlab.com/phoneyba
 ## Installation
 
 ### Arch
-From the AUR using your favorite AUR helper
+If you're on Arch, you can also use the AUR:
 
 ```sh
 yay -S pokego-bin
@@ -41,6 +41,18 @@ makepkg -si
 ### For other Linux Distributions
 Download the latest release. Unzip the executable, and move it to `/usr/bin`
 
+### Git
+You can also clone the repository and compile manually by doing:
+```sh
+git clone https://github.com/rubiin/pokego.git
+cd pokeget
+just build
+
+```
+Then move the executable to your path
+```sh
+mv builds/linux/pokego ~/.local/bin
+```
 
 
 There is also the development package [pokego-git](https://aur.archlinux.org/packages/pokego-bin) that tracks the main branch.
@@ -56,18 +68,20 @@ OPTIONS:
     -h, --help       Print help information
 
 SUBCOMMANDS:
-  -form string
+  --form string
         Show an alternate form of a pokemon
-  -list
+  --list
         Print list of all pokemon
-  -name string
+  --name string
         Select pokemon by name
-  -no-title
+  --no-title
         Do not display pokemon name
-  -random string
+  --random string
         Show a random pokemon. This flag can optionally be followed by a generation number or range (default "1-8")
-  -shiny
+  --shiny
         Show the shiny version of the pokemon instead
+   --version
+        Print version information
 ```
 
 To get the help of the random subcommand.
