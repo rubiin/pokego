@@ -1,31 +1,18 @@
 # Maintainer: Rubin Bhandari <roobin.bhandari@gmail.com>
-pkgname=pokego-git
-_pkgname=pokego
+
+pkgname=pokego-bin
+pkgver=0.2.0
 pkgrel=1
-pkgver=r9.13b23756%
-pkgdesc="CLI utility that prints unicode sprites of pokemon to the terminal"
-arch=('any')
-url="https://github.com/rubiin/pokego.git"
+pkgdesc="command-line tool that lets you display Pokémon sprites in color directly in your terminal"
+url="https://github.com/rubiin/pokego"
 license=("GPL-3.0")
-depends=('coreutils' 'go' 'upx')
-makedepends=('git')
-source=("$_pkgname::git+$url")
-md5sums=('SKIP')
-
-pkgver() {
-  cd "$_pkgname"
-  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short=8 HEAD)"
-}
-
-build() {
-    cd "$_pkgname"
-    go build -o pokego
-    upx pokego
-}
+arch=("any")
+provides=("pokego")
+conflicts=("pokego" "pokego-git")
+source=("https://github.com/rubiin/pokego/releases/download/v$pkgver/pokego-$pkgver.tar.gz")
+sha256sums=("f8fd0b77a5b440dabb7032cd95e33bc71daf3bc00972c2571ddad26783eca08b")
 
 package() {
-	  cd "$_pkgname"
-    install -Dm755 pokego "$pkgdir/usr/bin/pokego"
+    install -Dm755 pokego -t "$pkgdir/usr/bin"
     install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
-
 }
