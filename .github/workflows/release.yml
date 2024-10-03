@@ -1,21 +1,21 @@
-# .github/workflows/release.yaml
+name: Main
 
-on:
-  release:
-    types: [created]
-
-permissions:
-    contents: write
-    packages: write
+on: push
 
 jobs:
-  release-linux-amd64:
-    name: release linux/amd64
+  build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: wangyoucao577/go-release-action@v1
-      with:
-        github_token: ${{ secrets.TOKEN_GITHUB }}
-        goos: linux
-        goarch: amd64
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build
+        run: echo ${{ github.sha }} > Release.txt
+      - name: Test
+        run: cat Release.txt
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            Release.txt
+            LICENSE
