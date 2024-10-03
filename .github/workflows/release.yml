@@ -13,11 +13,12 @@ jobs:
       - name: Build
         run: just package-linux
       - name: Generate sha
-        run: go version
+        run: ls *.tar.gz | shasum -a 256 | awk -F' ' '{print $1}' > shashum
       - name: Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
             *.tar.gz
+            shasum
           token: ${{ secrets.TOKEN_GITHUB }}
