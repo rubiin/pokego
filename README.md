@@ -116,6 +116,17 @@ Print a random pokemon from generations 1,3 and 6
 pokego --random 1,3,6
 ```
 
+## Comparision
+The start time is the mean of 5 consecutives run using `time` coreutil
+
+| Tool                | Start Time (S)   | Size (MB)    | Language Used                 | 
+|---------------------|----------------|----------------|-------------------------------|
+| **Pokego**          | 0.006          | 3.2 MB         | Go                            |
+| **Pokeget**         | 0.006          | 5 MB           | Rust                          |
+| **Krabby**          | 0.016          | 23 MB          | Rust                          |
+| **Pokemonscripts**  | 0.060          | 43 MB          | Python                        |
+
+
 ## Credits
 Pokego's Pokémon sprites were sourced from [PokéSprite](https://msikma.github.io/pokesprite/) and transformed into Unicode format using Phoney Badger's [pokemon-generator-scripts](https://gitlab.com/phoneybadger/pokemon-generator-scripts).
 

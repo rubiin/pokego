@@ -1,4 +1,4 @@
-set dotenv-required
+set dotenv-load
 
 # prints all available commands
 default:
@@ -28,3 +28,9 @@ build:
 	GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X 'main.version=$VERSION'" -o builds/linux/pokego main.go
 	upx builds/linux/pokego
 
+
+package-linux:
+	echo "Building for Linux..."
+	GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X 'main.version=$VERSION'" -o pokego main.go
+	upx pokego
+	tar -czvf pokego-$VERSION.tar.gz pokego LICENSE
