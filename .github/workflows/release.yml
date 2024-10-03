@@ -19,4 +19,4 @@ jobs:
           files: |
             Release.txt
             LICENSE
-        token: ${{ secrets.TOKEN_GITHUB }}
+          token: ${{ secrets.TOKEN_GITHUB }}
