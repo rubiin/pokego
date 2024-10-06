@@ -117,11 +117,11 @@ pokego --random 1,3,6
 ```
 
 ## Comparision
-The start time is the mean of 5 consecutives run using `time` coreutil
+The start time is the mean of 5 consecutives run using `time` coreutil on my personal laptop[Acer Aspire 5]
 
 | Tool                | Start Time (S)   | Size (MB)    | Language Used                 | 
 |---------------------|----------------|----------------|-------------------------------|
-| **Pokego**          | 0.006          | 3.2 MB         | Go                            |
+| **Pokego**          | 0.005          | 3.2 MB         | Go                            |
 | **Pokeget**         | 0.006          | 5 MB           | Rust                          |
 | **Krabby**          | 0.016          | 23 MB          | Rust                          |
 | **Pokemonscripts**  | 0.060          | 43 MB          | Python                        |
