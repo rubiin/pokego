@@ -1,6 +1,6 @@
 pokego [<OPTION>];
 
-<OPTION> ::= (--help)
+<OPTION> ::= (-h | --help)
            | (-form)
            | (-list)
            | (-name )
