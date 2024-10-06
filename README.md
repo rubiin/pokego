@@ -45,7 +45,7 @@ Download the latest release. Unzip the executable, and move it to `/usr/bin`
 You can also clone the repository and compile manually by doing:
 ```sh
 git clone https://github.com/rubiin/pokego.git
-cd pokeget
+cd pokego
 just build
 
 ```
