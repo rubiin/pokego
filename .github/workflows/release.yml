@@ -14,13 +14,11 @@ jobs:
       - name: Install UPX
         run: sudo apt update && sudo apt install upx just
       - name: Build
-        run: just package-linux
-      - name: Generate sha
-        run: ls *.tar.gz | shasum -a 256 | awk -F' ' '{print $1}' > shashum
+        run: just build
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             *.tar.gz
-            shasum
+            *.exe
           token: ${{ secrets.TOKEN_GITHUB }}
