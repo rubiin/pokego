@@ -24,7 +24,7 @@ build:
 
 	echo "Building for Windows..."
 	GOOS=windows GOARCH=amd64 go build -ldflags "-s -w -X 'main.version=$VERSION'" -o pokego.exe main.go
-	upx --best --lzma pokego.exea
+	upx --best --lzma pokego.exe
 
 	echo "Building for macOS..."
 	GOOS=darwin GOARCH=amd64 go build -ldflags "-s -w -X 'main.version=$VERSION'" -o pokego main.go
