@@ -114,7 +114,7 @@ The start time is the mean of 5 consecutives run using `time` coreutil on my per
 
 | Tool                | Start Time (S)   | Size (MB)    | Language Used                 | 
 |---------------------|----------------|----------------|-------------------------------|
-| **Pokego**          | 0.005          | 3.2 MB         | Go                            |
+| **Pokego**          | 0.005          | 2.1 MB         | Go                            |
 | **Pokeget**         | 0.006          | 5 MB           | Rust                          |
 | **Krabby**          | 0.016          | 23 MB          | Rust                          |
 | **Pokemonscripts**  | 0.060          | 43 MB          | Python                        |
