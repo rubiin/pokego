@@ -1,0 +1,13 @@
+pokego [<OPTION>];
+
+<OPTION> ::= (-h | --help)
+           | (-form)
+           | (-list)
+           | (-name )
+           | (-no-title)
+           | (-random)
+           | (-shiny)
+           | (-version)
+           ;
+
+
