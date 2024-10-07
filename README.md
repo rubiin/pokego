@@ -60,28 +60,21 @@ There is also the development package [pokego-git](https://aur.archlinux.org/pac
 ## Usage
 Run the help command `pokego --help` to see the following help message.
 
-```
-USAGE:
-    pokego <SUBCOMMAND>
-
-OPTIONS:
-    -h, --help       Print help information
-
-SUBCOMMANDS:
-  --form string
+```sh
+USAGE:  -form string
         Show an alternate form of a pokemon
-  --list
+  -list
         Print list of all pokemon
-  --name string
+  -name string
         Select pokemon by name
-  --no-title
+  -no-title
         Do not display pokemon name
-  --random string
+  -random string
         Show a random pokemon. This flag can optionally be followed by a generation number or range (default "1-8")
-  --shiny
+  -shiny
         Show the shiny version of the pokemon instead
-   --version
-        Print version information
+  -version
+        Show the cli version
 ```
 
 To get the help of the random subcommand.
@@ -117,7 +110,7 @@ pokego --random 1,3,6
 ```
 
 ## Comparision
-The start time is the mean of 5 consecutives run using `time` coreutil on my personal laptop[Acer Aspire 5]
+The start time is the mean of 5 consecutives run using `time` coreutil on my personal laptop[Acer Aspire 5] on `2024/10/06`
 
 | Tool                | Start Time (S)   | Size (MB)    | Language Used                 | 
 |---------------------|----------------|----------------|-------------------------------|
