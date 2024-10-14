@@ -39,7 +39,13 @@ Or alternatively you can manually download the PKGBUILD file from the repository
 makepkg -si
 ```
 ### For other Linux Distributions
-Download the latest release. Unzip the executable, and move it to `/usr/bin`
+Download the latest release. Unzip the executable
+
+Then move the executable to your path
+```sh
+mv builds/linux/pokego ~/.local/bin
+```
+
 
 ### Git
 You can also clone the repository and compile manually by doing:
@@ -100,7 +106,7 @@ Print a random pokemon (gens 1-8)
 ```
 pokego
 ```
-Print random pokemon from generations 1-3
+Print random pokemon from generations 1-3 (range)
 ```
 pokego --random 1-3
 ```
@@ -110,9 +116,9 @@ pokego --random 1,3,6
 ```
 
 ## Comparision
-The start time is the mean of 5 consecutives run using `time` coreutil on my personal laptop[Acer Aspire 5] on `2024/10/06`
+The start time is the mean of 5 consecutive run using `time` coreutil on my personal laptop[Acer Aspire 5] on `2024/10/06`
 
-| Tool                | Start Time (S)   | Size (MB)    | Language Used                 | 
+| Tool                | Start Time (S)   | Size (MB)    | Language Used                 |
 |---------------------|----------------|----------------|-------------------------------|
 | **Pokego**          | 0.005          | 2.1 MB         | Go                            |
 | **Pokeget**         | 0.006          | 5 MB           | Rust                          |

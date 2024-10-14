@@ -1,8 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"embed"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"math/rand"
@@ -18,14 +18,16 @@ type Pokemon struct {
 }
 
 var (
-	version   string
+	version string
 )
 
 // Embed assets directory
+//
 //go:embed assets/*
 var assets embed.FS
 
 const (
+	rootDir         = "assets"
 	shinyRate       = 1.0 / 128.0
 	colorscriptsDir = "colorscripts"
 	regularSubdir   = "regular"
@@ -56,7 +58,7 @@ func printFile(filepath string) {
 
 // readPokemonJSON reads the pokemon.json file from the embedded assets
 func readPokemonJSON() []Pokemon {
-	file, err := assets.ReadFile("assets/pokemon.json")
+	file, err := assets.ReadFile(filepath.Join(rootDir,"pokemon.json"))
 	if err != nil {
 		panic(err)
 	}
@@ -83,7 +85,6 @@ func showPokemonByName(name string, showTitle, shiny bool, form string) {
 		colorSubdir = shinySubdir
 	}
 
-
 	pokemon := readPokemonJSON()
 	pokemonNames := make(map[string]struct{})
 
@@ -92,7 +93,7 @@ func showPokemonByName(name string, showTitle, shiny bool, form string) {
 	}
 
 	if _, exists := pokemonNames[name]; !exists {
-		fmt.Printf("Invalid pokemon %s\n", name)
+		fmt.Printf("invalid pokemon %s\n", name)
 		os.Exit(1)
 	}
 
@@ -105,8 +106,8 @@ func showPokemonByName(name string, showTitle, shiny bool, form string) {
 			}
 		}
 		if !contains(alternateForms, form) {
-			fmt.Printf("Invalid form '%s' for pokemon %s\n", form, name)
-			fmt.Println("Available alternate forms are:")
+			fmt.Printf("invalid form '%s' for pokemon %s\n", form, name)
+			fmt.Println("available alternate forms are:")
 			for _, f := range alternateForms {
 				fmt.Printf("- %s\n", f)
 			}
@@ -115,7 +116,7 @@ func showPokemonByName(name string, showTitle, shiny bool, form string) {
 		name += "-" + form
 	}
 
-	pokemonFile := filepath.Join("assets", colorscriptsDir, colorSubdir, name)
+	pokemonFile := filepath.Join(rootDir, colorscriptsDir, colorSubdir, name)
 	if showTitle {
 		if shiny {
 			fmt.Printf("%s (shiny)\n", name)
@@ -145,13 +146,13 @@ func showRandomPokemon(generationsStr string, showTitle, shiny bool) {
 	pokemon := readPokemonJSON()
 	startIdx, ok := generations[startGen]
 	if !ok {
-		fmt.Printf("Invalid generation '%s'\n", generationsStr)
+		fmt.Printf("invalid generation '%s'\n", generationsStr)
 		os.Exit(1)
 	}
 
 	endIdx, ok := generations[endGen]
 	if !ok {
-		fmt.Printf("Invalid generation '%s'\n", generationsStr)
+		fmt.Printf("invalid generation '%s'\n", generationsStr)
 		os.Exit(1)
 	}
 
@@ -187,9 +188,9 @@ func main() {
 
 	if *listPtr {
 		listPokemonNames()
-	}else if *versionPtr {
+	} else if *versionPtr {
 		fmt.Println(version)
-	}else if *namePtr != "" {
+	} else if *namePtr != "" {
 		showPokemonByName(*namePtr, !*noTitlePtr, *shinyPtr, *formPtr)
 	} else if *randomPtr != "" {
 		if *formPtr != "" {
@@ -197,7 +198,7 @@ func main() {
 			os.Exit(1)
 		}
 		showRandomPokemon(*randomPtr, !*noTitlePtr, *shinyPtr)
-	}else {
+	} else {
 		flag.Usage()
 	}
 }
