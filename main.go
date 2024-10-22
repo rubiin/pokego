@@ -179,30 +179,37 @@ func contains(slice []string, item string) bool {
 // main function to handle command-line flags and execute appropriate actions
 func main() {
 	app := &cli.App{
+		Name:  "pokego",
+		Usage: "command-line tool that lets you display Pokémon sprites in color directly in your terminal",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
-				Name:  "list",
-				Usage: "Print list of all pokemon",
+				Name:    "list",
+				Aliases: []string{"l"},
+				Usage:   "Print list of all pokemon",
 			},
 			&cli.StringFlag{
-				Name:  "name",
-				Usage: "Select pokemon by name",
+				Name:    "name",
+				Aliases: []string{"n"},
+				Usage:   "Select pokemon by name",
 			},
 			&cli.StringFlag{
-				Name:  "form",
-				Usage: "Show an alternate form of a pokemon",
+				Name:    "form",
+				Aliases: []string{"f"},
+				Usage:   "Show an alternate form of a pokemon",
 			},
 			&cli.BoolFlag{
 				Name:  "no-title",
 				Usage: "Do not display pokemon name",
 			},
 			&cli.BoolFlag{
-				Name:  "shiny",
-				Usage: "Show the shiny version of the pokemon instead",
+				Name:    "shiny",
+				Aliases: []string{"s"},
+				Usage:   "Show the shiny version of the pokemon instead",
 			},
 			&cli.StringFlag{
-				Name:  "random",
-				Usage: "Show a random pokemon. This flag can optionally be followed by a generation number or range",
+				Name:    "random",
+				Aliases: []string{"r"},
+				Usage:   "Show a random pokemon. This flag can optionally be followed by a generation number or range",
 			},
 			&cli.BoolFlag{
 				Name:  "version",
