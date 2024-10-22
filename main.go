@@ -3,12 +3,13 @@ package main
 import (
 	"embed"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/urfave/cli/v2"
 )
 
 // Pokemon struct represents the data structure for a Pokémon
@@ -58,7 +59,7 @@ func printFile(filepath string) {
 
 // readPokemonJSON reads the pokemon.json file from the embedded assets
 func readPokemonJSON() []Pokemon {
-	file, err := assets.ReadFile(filepath.Join(rootDir,"pokemon.json"))
+	file, err := assets.ReadFile(filepath.Join(rootDir, "pokemon.json"))
 	if err != nil {
 		panic(err)
 	}
@@ -177,28 +178,64 @@ func contains(slice []string, item string) bool {
 
 // main function to handle command-line flags and execute appropriate actions
 func main() {
-	listPtr := flag.Bool("list", false, "Print list of all pokemon")
-	namePtr := flag.String("name", "", "Select pokemon by name")
-	formPtr := flag.String("form", "", "Show an alternate form of a pokemon")
-	noTitlePtr := flag.Bool("no-title", false, "Do not display pokemon name")
-	shinyPtr := flag.Bool("shiny", false, "Show the shiny version of the pokemon instead")
-	randomPtr := flag.String("random", "1-8", "Show a random pokemon. This flag can optionally be followed by a generation number or range")
-	versionPtr := flag.Bool("version", false, "Show the cli version")
-	flag.Parse()
-
-	if *listPtr {
-		listPokemonNames()
-	} else if *versionPtr {
-		fmt.Println(version)
-	} else if *namePtr != "" {
-		showPokemonByName(*namePtr, !*noTitlePtr, *shinyPtr, *formPtr)
-	} else if *randomPtr != "" {
-		if *formPtr != "" {
-			fmt.Println("--form flag unexpected with --random")
-			os.Exit(1)
-		}
-		showRandomPokemon(*randomPtr, !*noTitlePtr, *shinyPtr)
-	} else {
-		flag.Usage()
+	app := &cli.App{
+		Name:  "pokego",
+		Usage: "command-line tool that lets you display Pokémon sprites in color directly in your terminal",
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:    "list",
+				Aliases: []string{"l"},
+				Usage:   "Print list of all pokemon",
+			},
+			&cli.StringFlag{
+				Name:    "name",
+				Aliases: []string{"n"},
+				Usage:   "Select pokemon by name",
+			},
+			&cli.StringFlag{
+				Name:    "form",
+				Aliases: []string{"f"},
+				Usage:   "Show an alternate form of a pokemon",
+			},
+			&cli.BoolFlag{
+				Name:  "no-title",
+				Usage: "Do not display pokemon name",
+			},
+			&cli.BoolFlag{
+				Name:    "shiny",
+				Aliases: []string{"s"},
+				Usage:   "Show the shiny version of the pokemon instead",
+			},
+			&cli.StringFlag{
+				Name:    "random",
+				Aliases: []string{"r"},
+				Usage:   "Show a random pokemon. This flag can optionally be followed by a generation number or range",
+			},
+			&cli.BoolFlag{
+				Name:  "version",
+				Usage: "Show the cli version",
+			},
+		},
+		Action: func(ctx *cli.Context) error {
+			if ctx.Bool("list") {
+				listPokemonNames()
+			} else if ctx.Bool("version") {
+				fmt.Println(version)
+			} else if ctx.String("name") != "" {
+				showPokemonByName(ctx.String("name"), !ctx.Bool("no-title"), ctx.Bool("shiny"), ctx.String("form"))
+			} else if ctx.String("random") != "" {
+				if ctx.String("form") != "" {
+					fmt.Println("--form flag unexpected with --random")
+					os.Exit(1)
+				}
+				showRandomPokemon(ctx.String("random"), !ctx.Bool("no-title"), ctx.Bool("shiny"))
+			} else {
+				cli.ShowAppHelpAndExit(ctx, 1)
+			}
+			return nil
+		},
+	}
+	if err := app.Run(os.Args); err != nil {
+		fmt.Println(err)
 	}
 }
