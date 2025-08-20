@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"encoding/json"
 	"fmt"
@@ -9,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 // Pokemon struct represents the data structure for a Pokémon
@@ -178,9 +179,9 @@ func contains(slice []string, item string) bool {
 
 // main function to handle command-line flags and execute appropriate actions
 func main() {
-	app := &cli.App{
-		Name:  "pokego",
-		Usage: "command-line tool that lets you display Pokémon sprites in color directly in your terminal",
+	app := &cli.Command{
+		Name:                  "pokego",
+		Usage:                 "command-line tool that lets you display Pokémon sprites in color directly in your terminal",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:    "list",
@@ -216,26 +217,27 @@ func main() {
 				Usage: "Show the cli version",
 			},
 		},
-		Action: func(ctx *cli.Context) error {
-			if ctx.Bool("list") {
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			if cmd.Bool("list") {
 				listPokemonNames()
-			} else if ctx.Bool("version") {
+			} else if cmd.Bool("version") {
 				fmt.Println(version)
-			} else if ctx.String("name") != "" {
-				showPokemonByName(ctx.String("name"), !ctx.Bool("no-title"), ctx.Bool("shiny"), ctx.String("form"))
-			} else if ctx.String("random") != "" {
-				if ctx.String("form") != "" {
+			} else if cmd.String("name") != "" {
+				showPokemonByName(cmd.String("name"), !cmd.Bool("no-title"), cmd.Bool("shiny"), cmd.String("form"))
+			} else if cmd.String("random") != "" {
+				if cmd.String("form") != "" {
 					fmt.Println("--form flag unexpected with --random")
 					os.Exit(1)
 				}
-				showRandomPokemon(ctx.String("random"), !ctx.Bool("no-title"), ctx.Bool("shiny"))
+				showRandomPokemon(cmd.String("random"), !cmd.Bool("no-title"), cmd.Bool("shiny"))
 			} else {
-				cli.ShowAppHelpAndExit(ctx, 1)
+				cli.ShowRootCommandHelp(cmd)
+				os.Exit(1)
 			}
 			return nil
 		},
 	}
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(context.Background(), os.Args); err != nil {
 		fmt.Println(err)
 	}
 }
