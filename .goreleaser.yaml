@@ -38,6 +38,12 @@ archives:
       - goos: windows
         formats: [zip]
 
+files:
+      - LICENSE
+      - README_{{.Os}}.md
+      - completions/*
+
+
 changelog:
   sort: asc
   filters:
