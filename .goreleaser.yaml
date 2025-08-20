@@ -40,7 +40,6 @@ archives:
 
     files:
           - LICENSE
-          - README_{{.Os}}.md
           - completions/*
 
 
