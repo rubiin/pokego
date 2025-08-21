@@ -1,11 +1,11 @@
 pokego [<OPTION>];
 
-<OPTION> ::= (-h | --help)
-           | (-form)
-           | (-list)
-           | (-name )
-           | (-no-title)
-           | (-random)
-           | (-shiny)
-           | (-version)
+<OPTION> ::= (--help || -h)             "display this help text and exit"
+           | --form                     "display Pokémon with alternate forms"
+           | --list                     "list all available Pokémon"
+           | --name=<NAME>              "show information for the given Pokémon NAME"
+           | --no-title                 "suppress title/header in output"
+           | --random                   "display a random Pokémon"
+           | --shiny                    "display the shiny version if available"
+           | (--version || -V)          "display version information and exit"
            ;
