@@ -13,7 +13,7 @@ clean-files:
 	rm -rf builds
 
 generate-completion:
-	complgen aot --bash-script ./completions/pokego.bash --fish-script ./completions/pokego.fish --zsh-script ./completions/pokego.zsh ./completions/pokego.usage
+	complgen --bash ./completions/pokego.bash --fish ./completions/pokego.fish --zsh ./completions/pokego.zsh ./completions/pokego.usage
 
 
 build:
