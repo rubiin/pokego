@@ -3,8 +3,8 @@
 _pokego () {
     declare -a literals=("--help" "-h" "--form" "string" "-f" "string" "--list" "-l" "--name" "-n" "--no-title" "-nt" "--random" "1" "2" "3" "4" "5" "6" "7" "8" "-r" "1" "2" "3" "4" "5" "6" "7" "8" "--shiny" "-s" "--version" "-v")
     declare -A descrs=()
-    descrs[0]="display this help text and exit"
-    descrs[1]="display Pokémon with alternate forms"
+    descrs[0]="Display this help text and exit"
+    descrs[1]="Show an alternate form of a pokemon"
     descrs[2]="Print list of all pokemon"
     descrs[3]="Select pokemon by name"
     descrs[4]="Do not display pokemon name"

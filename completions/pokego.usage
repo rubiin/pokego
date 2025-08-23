@@ -1,7 +1,7 @@
 pokego [<OPTION>];
 
-<OPTION> ::= (--help || -h)                                 "display this help text and exit"
-           | (--form <FORM> || -f <FORM>)                   "display Pokémon with alternate forms"
+<OPTION> ::= (--help || -h)                                 "Display this help text and exit"
+           | (--form <FORM> || -f <FORM>)                   "Show an alternate form of a pokemon"
            | (--list || -l)                                 "Print list of all pokemon"
            | (--name <NAME> || -n <NAME>)                   "Select pokemon by name"
            | (--no-title || -nt)                            "Do not display pokemon name"

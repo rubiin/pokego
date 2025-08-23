@@ -70,8 +70,8 @@ function _pokego
     set literals --help -h --form string -f string --list -l --name -n --no-title -nt --random 1 2 3 4 5 6 7 8 -r 1 2 3 4 5 6 7 8 --shiny -s --version -v
 
     set descrs
-    set descrs[1] "display this help text and exit"
-    set descrs[2] "display Pokémon with alternate forms"
+    set descrs[1] "Display this help text and exit"
+    set descrs[2] "Show an alternate form of a pokemon"
     set descrs[3] "Print list of all pokemon"
     set descrs[4] "Select pokemon by name"
     set descrs[5] "Do not display pokemon name"
