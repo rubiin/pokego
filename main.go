@@ -180,8 +180,8 @@ func contains(slice []string, item string) bool {
 // main function to handle command-line flags and execute appropriate actions
 func main() {
 	app := &cli.Command{
-		Name:                  "pokego",
-		Usage:                 "command-line tool that lets you display Pokémon sprites in color directly in your terminal",
+		Name:  "pokego",
+		Usage: "command-line tool that lets you display Pokémon sprites in color directly in your terminal",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:    "list",
@@ -199,8 +199,9 @@ func main() {
 				Usage:   "Show an alternate form of a pokemon",
 			},
 			&cli.BoolFlag{
-				Name:  "no-title",
-				Usage: "Do not display pokemon name",
+				Name:    "no-title",
+				Aliases: []string{"nt"},
+				Usage:   "Do not display pokemon name",
 			},
 			&cli.BoolFlag{
 				Name:    "shiny",
@@ -213,8 +214,9 @@ func main() {
 				Usage:   "Show a random pokemon. This flag can optionally be followed by a generation number or range",
 			},
 			&cli.BoolFlag{
-				Name:  "version",
-				Usage: "Show the cli version",
+				Name:    "version",
+				Aliases: []string{"v"},
+				Usage:   "Show the cli version",
 			},
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {

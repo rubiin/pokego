@@ -1,11 +1,15 @@
 pokego [<OPTION>];
 
-<OPTION> ::= (--help || -h)             "display this help text and exit"
-           | --form                     "display Pokémon with alternate forms"
-           | --list                     "list all available Pokémon"
-           | --name=<NAME>              "show information for the given Pokémon NAME"
-           | --no-title                 "suppress title/header in output"
-           | --random                   "display a random Pokémon"
-           | --shiny                    "display the shiny version if available"
-           | (--version || -V)          "display version information and exit"
+<OPTION> ::= (--help || -h)                                 "display this help text and exit"
+           | (--form <FORM> || -f <FORM>)                   "display Pokémon with alternate forms"
+           | (--list || -l)                                 "Print list of all pokemon"
+           | (--name <NAME> || -n <NAME>)                   "Select pokemon by name"
+           | (--no-title || -nt)                            "Do not display pokemon name"
+           | (--random <GENERATION> || -r <GENERATION>)     "Show a random pokemon. This flag can optionally be followed by a generation number or range"
+           | (--shiny || -s)                                "Show the shiny version of the pokemon instead"
+           | (--version || -v)                              "Show the cli version"
            ;
+
+<GENERATION> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+<NAME> ::= string;
+<FORM> ::= string;
