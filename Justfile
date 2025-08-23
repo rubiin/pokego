@@ -1,35 +1,16 @@
-set dotenv-load
-FILENAME := "PKGBUILD"
-
 # prints all available commands
 default:
 	just --list
 
 # clean all auto generated files and generate build
-init: clean-files build
+init: clean-files generate-completion release
 
 # clean all auto generated files
 clean-files:
-	rm -rf builds
+	rm -rf build dist
 
 generate-completion:
 	complgen --bash ./completions/pokego.bash --fish ./completions/pokego.fish --zsh ./completions/pokego.zsh ./completions/pokego.usage
 
-
-build:
-	echo "Building for Linux..."
-	GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X 'main.version=$VERSION'" -o pokego main.go
-	upx --best --lzma pokego
-	tar -czvf pokego-linux-$VERSION.tar.gz pokego LICENSE completions
-
-	echo "Building for Windows..."
-	GOOS=windows GOARCH=amd64 go build -ldflags "-s -w -X 'main.version=$VERSION'" -o pokego.exe main.go
-	upx --best --lzma pokego.exe
-
-	echo "Building for macOS..."
-	GOOS=darwin GOARCH=amd64 go build -ldflags "-s -w -X 'main.version=$VERSION'" -o pokego main.go
-	tar -czvf pokego-mac-$VERSION.tar.gz pokego LICENSE completions
-
-pkgbuild:
-	sed -i "s/pkgver=.*/pkgver=$VERSION/" PKGBUILD
-	sed -i "s/sha256sums=\"[^\"]*\"/sha256sums=\"$$FILENAME\"/" PKGBUILD
+release:
+	goreleaser release
