@@ -13,7 +13,6 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-// Pokemon struct represents the data structure for a Pokémon
 type Pokemon struct {
 	Name  string   `json:"name"`
 	Forms []string `json:"forms"`
@@ -21,10 +20,12 @@ type Pokemon struct {
 
 var (
 	version string
+
+	// Cached Pokémon data
+	allPokemon   []Pokemon
+	pokemonIndex map[string]*Pokemon
 )
 
-// Embed assets directory
-//
 //go:embed assets/*
 var assets embed.FS
 
@@ -36,7 +37,6 @@ const (
 	shinySubdir     = "shiny"
 )
 
-// Generation ranges for Pokémon
 var generations = map[string][2]int{
 	"1": {1, 151},
 	"2": {152, 251},
@@ -48,9 +48,24 @@ var generations = map[string][2]int{
 	"8": {810, 898},
 }
 
-// printFile prints the content of the specified file
-func printFile(filepath string) {
-	content, err := assets.ReadFile(filepath)
+// --- Helpers ---
+
+func mustLoadPokemon() {
+	data, err := assets.ReadFile(filepath.Join(rootDir, "pokemon.json"))
+	if err != nil {
+		panic(err)
+	}
+	if err := json.Unmarshal(data, &allPokemon); err != nil {
+		panic(err)
+	}
+	pokemonIndex = make(map[string]*Pokemon, len(allPokemon))
+	for i := range allPokemon {
+		pokemonIndex[allPokemon[i].Name] = &allPokemon[i]
+	}
+}
+
+func printFile(path string) {
+	content, err := assets.ReadFile(path)
 	if err != nil {
 		fmt.Println("Error reading file:", err)
 		return
@@ -58,59 +73,31 @@ func printFile(filepath string) {
 	fmt.Print(string(content))
 }
 
-// readPokemonJSON reads the pokemon.json file from the embedded assets
-func readPokemonJSON() []Pokemon {
-	file, err := assets.ReadFile(filepath.Join(rootDir, "pokemon.json"))
-	if err != nil {
-		panic(err)
-	}
-
-	var pokemon []Pokemon
-	if err := json.Unmarshal(file, &pokemon); err != nil {
-		panic(err)
-	}
-	return pokemon
-}
-
-// listPokemonNames lists the names of all Pokémon
 func listPokemonNames() {
-	pokemon := readPokemonJSON()
-	for _, p := range pokemon {
+	for _, p := range allPokemon {
 		fmt.Println(p.Name)
 	}
 }
 
-// showPokemonByName displays Pokémon information based on its name
 func showPokemonByName(name string, showTitle, shiny bool, form string) {
-	colorSubdir := regularSubdir
-	if shiny {
-		colorSubdir = shinySubdir
-	}
-
-	pokemon := readPokemonJSON()
-	pokemonNames := make(map[string]struct{})
-
-	for _, p := range pokemon {
-		pokemonNames[p.Name] = struct{}{}
-	}
-
-	if _, exists := pokemonNames[name]; !exists {
+	p, ok := pokemonIndex[name]
+	if !ok {
 		fmt.Printf("invalid pokemon %s\n", name)
 		os.Exit(1)
 	}
 
 	if form != "" {
-		var alternateForms []string
-		for _, p := range pokemon {
-			if p.Name == name {
-				alternateForms = p.Forms
+		valid := false
+		for _, f := range p.Forms {
+			if f == form {
+				valid = true
 				break
 			}
 		}
-		if !contains(alternateForms, form) {
+		if !valid {
 			fmt.Printf("invalid form '%s' for pokemon %s\n", form, name)
 			fmt.Println("available alternate forms are:")
-			for _, f := range alternateForms {
+			for _, f := range p.Forms {
 				fmt.Printf("- %s\n", f)
 			}
 			os.Exit(1)
@@ -118,7 +105,11 @@ func showPokemonByName(name string, showTitle, shiny bool, form string) {
 		name += "-" + form
 	}
 
-	pokemonFile := filepath.Join(rootDir, colorscriptsDir, colorSubdir, name)
+	colorSubdir := regularSubdir
+	if shiny {
+		colorSubdir = shinySubdir
+	}
+
 	if showTitle {
 		if shiny {
 			fmt.Printf("%s (shiny)\n", name)
@@ -126,40 +117,37 @@ func showPokemonByName(name string, showTitle, shiny bool, form string) {
 			fmt.Println(name)
 		}
 	}
-	printFile(pokemonFile)
+
+	printFile(filepath.Join(rootDir, colorscriptsDir, colorSubdir, name))
 }
 
-// showRandomPokemon displays a random Pokémon based on specified generations
-func showRandomPokemon(generationsStr string, showTitle, shiny bool) {
+func showRandomPokemon(genStr string, showTitle, shiny bool) {
 	var startGen, endGen string
-	genList := strings.Split(generationsStr, ",")
+	genList := strings.Split(genStr, ",")
 
 	if len(genList) > 1 {
 		startGen = genList[rand.Intn(len(genList))]
 		endGen = startGen
-	} else if strings.Contains(generationsStr, "-") {
-		parts := strings.Split(generationsStr, "-")
+	} else if strings.Contains(genStr, "-") {
+		parts := strings.SplitN(genStr, "-", 2)
 		startGen, endGen = parts[0], parts[1]
 	} else {
-		startGen = generationsStr
-		endGen = startGen
+		startGen, endGen = genStr, genStr
 	}
 
-	pokemon := readPokemonJSON()
 	startIdx, ok := generations[startGen]
 	if !ok {
-		fmt.Printf("invalid generation '%s'\n", generationsStr)
+		fmt.Printf("invalid generation '%s'\n", genStr)
 		os.Exit(1)
 	}
-
 	endIdx, ok := generations[endGen]
 	if !ok {
-		fmt.Printf("invalid generation '%s'\n", generationsStr)
+		fmt.Printf("invalid generation '%s'\n", genStr)
 		os.Exit(1)
 	}
 
 	randomIdx := rand.Intn(endIdx[1]-startIdx[0]+1) + startIdx[0]
-	randomPokemon := pokemon[randomIdx-1].Name
+	randomPokemon := allPokemon[randomIdx-1].Name
 
 	if !shiny && rand.Float64() <= shinyRate {
 		shiny = true
@@ -167,78 +155,43 @@ func showRandomPokemon(generationsStr string, showTitle, shiny bool) {
 	showPokemonByName(randomPokemon, showTitle, shiny, "")
 }
 
-// contains checks if a slice contains a specific item
-func contains(slice []string, item string) bool {
-	for _, v := range slice {
-		if v == item {
-			return true
-		}
-	}
-	return false
-}
-
-// main function to handle command-line flags and execute appropriate actions
 func main() {
+	mustLoadPokemon()
+
 	app := &cli.Command{
 		Name:  "pokego",
-		Usage: "command-line tool that lets you display Pokémon sprites in color directly in your terminal",
+		Usage: "display Pokémon sprites in color directly in your terminal",
 		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:    "list",
-				Aliases: []string{"l"},
-				Usage:   "Print list of all pokemon",
-			},
-			&cli.StringFlag{
-				Name:    "name",
-				Aliases: []string{"n"},
-				Usage:   "Select pokemon by name",
-			},
-			&cli.StringFlag{
-				Name:    "form",
-				Aliases: []string{"f"},
-				Usage:   "Show an alternate form of a pokemon",
-			},
-			&cli.BoolFlag{
-				Name:    "no-title",
-				Aliases: []string{"nt"},
-				Usage:   "Do not display pokemon name",
-			},
-			&cli.BoolFlag{
-				Name:    "shiny",
-				Aliases: []string{"s"},
-				Usage:   "Show the shiny version of the pokemon instead",
-			},
-			&cli.StringFlag{
-				Name:    "random",
-				Aliases: []string{"r"},
-				Usage:   "Show a random pokemon. This flag can optionally be followed by a generation number or range",
-			},
-			&cli.BoolFlag{
-				Name:    "version",
-				Aliases: []string{"v"},
-				Usage:   "Show the cli version",
-			},
+			&cli.BoolFlag{Name: "list", Aliases: []string{"l"}, Usage: "List all Pokémon"},
+			&cli.StringFlag{Name: "name", Aliases: []string{"n"}, Usage: "Select Pokémon by name"},
+			&cli.StringFlag{Name: "form", Aliases: []string{"f"}, Usage: "Show alternate form of a Pokémon"},
+			&cli.BoolFlag{Name: "no-title", Aliases: []string{"nt"}, Usage: "Do not display Pokémon name"},
+			&cli.BoolFlag{Name: "shiny", Aliases: []string{"s"}, Usage: "Show shiny version"},
+			&cli.StringFlag{Name: "random", Aliases: []string{"r"}, Usage: "Show random Pokémon, optionally by generation or range"},
+			&cli.BoolFlag{Name: "version", Aliases: []string{"v"}, Usage: "Show CLI version"},
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			if cmd.Bool("list") {
+			switch {
+			case cmd.Bool("list"):
 				listPokemonNames()
-			} else if cmd.Bool("version") {
+			case cmd.Bool("version"):
 				fmt.Println(version)
-			} else if cmd.String("name") != "" {
+			case cmd.String("name") != "":
 				showPokemonByName(cmd.String("name"), !cmd.Bool("no-title"), cmd.Bool("shiny"), cmd.String("form"))
-			} else if cmd.String("random") != "" {
+			case cmd.String("random") != "":
 				if cmd.String("form") != "" {
 					fmt.Println("--form flag unexpected with --random")
 					os.Exit(1)
 				}
 				showRandomPokemon(cmd.String("random"), !cmd.Bool("no-title"), cmd.Bool("shiny"))
-			} else {
+			default:
 				cli.ShowRootCommandHelp(cmd)
 				os.Exit(1)
 			}
 			return nil
 		},
 	}
+
 	if err := app.Run(context.Background(), os.Args); err != nil {
 		fmt.Println(err)
 	}
