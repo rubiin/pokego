@@ -52,7 +52,7 @@ You can also clone the repository and compile manually by doing:
 ```sh
 git clone https://github.com/rubiin/pokego.git
 cd pokego
-just build
+go build -o pokego
 
 ```
 Then move the executable to your path
