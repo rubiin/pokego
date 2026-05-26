@@ -102,10 +102,6 @@ Print an alternative form of a pokemon
 ```
 pokego --name blastoise --form mega
 ```
-Print a random pokemon (gens 1-8)
-```
-pokego
-```
 Print random pokemon from generations 1-3 (range)
 ```
 pokego --random 1-3
