@@ -20,9 +20,8 @@ Go version of phoney badger's [pokemon-colorscripts](https://gitlab.com/phoneyba
 
 ## Features
 - Includes Pokémon from all generations, along with shiny, mega, Gigantamax, and regional variants
-- Ability to print random Pokémon with options to filter by generation and form
-- Print specific Pokémon by name
-- Display both the sprite and Pokédex entry
+- Print random Pokémon, optionally filtered by generation or range
+- Print a specific Pokémon by name, with an optional alternate form
 
 ## Installation
 
@@ -43,7 +42,7 @@ Download the latest release. Unzip the executable
 
 Then move the executable to your path
 ```sh
-mv builds/linux/pokego ~/.local/bin
+mv pokego ~/.local/bin
 ```
 
 
@@ -52,38 +51,42 @@ You can also clone the repository and compile manually by doing:
 ```sh
 git clone https://github.com/rubiin/pokego.git
 cd pokego
-go build -o pokego
+just build
 
 ```
+
+(Or, without `just`: `go build -ldflags "-s -w" -o pokego`.)
 Then move the executable to your path
 ```sh
-mv builds/linux/pokego ~/.local/bin
+mv pokego ~/.local/bin
 ```
 
 
 There is also the development package [pokego-git](https://aur.archlinux.org/packages/pokego-bin) that tracks the main branch.
 
 ## Usage
-Run the help command `pokego --help` to see the following help message.
+Run `pokego --help` to see all options.
 
 ```sh
-USAGE:  -form string
-        Show an alternate form of a pokemon
-  -list
-        Print list of all pokemon
-  -name string
-        Select pokemon by name
-  -no-title
-        Do not display pokemon name
-  -random string
-        Show a random pokemon. This flag can optionally be followed by a generation number or range (default "1-8")
-  -shiny
-        Show the shiny version of the pokemon instead
-  -version
-        Show the cli version
+NAME:
+   pokego - display Pokémon sprites in color directly in your terminal
+
+USAGE:
+   pokego [global options]
+
+GLOBAL OPTIONS:
+   --list, -l                  List all Pokémon
+   --name string, -n string    Select Pokémon by name
+   --form string, -f string    Show alternate form of a Pokémon
+   --no-title, --nt            Do not display Pokémon name
+   --shiny, -s                 Show shiny version
+   --random string, -r string  Show random Pokémon, optionally by generation or range
+   --version, -v               Show CLI version
+   --help, -h                  show help
 ```
 
-To get the help of the random subcommand.
+`--list` prints the base name of every Pokémon (905 in total); alternate forms are
+not listed. Use forms with `--name`, e.g. `pokego --name charizard --form mega-y`.
 
 ### Examples
 Print a specific pokemon
@@ -94,7 +97,7 @@ Print a specific shiny pokemon
 ```
 pokego --name spheal -s
 ```
-Print a specific pokemon together with its pokedex entry
+Print a specific pokemon
 ```
 pokego --name mudkip
 ```
@@ -116,10 +119,13 @@ The start time is the mean of 5 consecutive run using `time` coreutil on my pers
 
 | Tool                | Start Time (S)   | Size (MB)    | Language Used                 |
 |---------------------|----------------|----------------|-------------------------------|
-| **Pokego**          | 0.005          | 2.1 MB         | Go                            |
+| **Pokego**          | 0.005          | 27 MB          | Go                            |
 | **Pokeget**         | 0.006          | 5 MB           | Rust                          |
 | **Krabby**          | 0.016          | 23 MB          | Rust                          |
 | **Pokemonscripts**  | 0.060          | 43 MB          | Python                        |
+
+The ~27 MB Pokego binary is dominated by the embedded sprite assets (the raw corpus
+is ~29 MB); `go build -ldflags "-s -w"` trims it to ~26 MB.
 
 
 ## Credits
