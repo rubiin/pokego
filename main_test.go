@@ -232,6 +232,33 @@ func TestAction(t *testing.T) {
 	})
 }
 
+// EnableShellCompletion must expose the hidden `completion` command for every
+// supported shell, with each script referencing the program name.
+func TestShellCompletion(t *testing.T) {
+	run := func(args ...string) string {
+		var err error
+		out := capture(func() {
+			err = newTestApp().Run(context.Background(), append([]string{"pokego"}, args...))
+		})
+		if err != nil {
+			t.Errorf("%v: unexpected error %v", args, err)
+		}
+		return out
+	}
+
+	for _, shell := range []string{"bash", "zsh", "fish", "pwsh"} {
+		out := run("completion", shell)
+		if !strings.Contains(out, "pokego") {
+			t.Errorf("completion %s: script missing program name", shell)
+		}
+	}
+
+	// An unknown shell must fail rather than print a bogus script.
+	if err := newTestApp().Run(context.Background(), []string{"pokego", "completion", "tcsh"}); err == nil {
+		t.Error("completion tcsh: expected error")
+	}
+}
+
 // capture runs fn with stdout redirected to a temp file and returns the
 // output it wrote. cli v3's Setup assigns cmd.Writer from os.Stdout inside
 // Run, so this also captures --help and other cli-rendered output.

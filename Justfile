@@ -7,14 +7,15 @@ build:
 	go build -ldflags "-s -w" -o pokego .
 
 # clean all auto generated files and generate build
-init: clean-files generate-completion release
+init: clean-files release
 
 # clean all auto generated files
 clean-files:
 	rm -rf build dist
 
-generate-completion:
-	complgen --bash ./completions/pokego.bash --fish ./completions/pokego.fish --zsh ./completions/pokego.zsh ./completions/pokego.usage
-
+# cut a release
 release:
-	goreleaser release
+	goreleaser release --clean
+
+test:
+	go test

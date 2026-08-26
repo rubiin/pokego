@@ -1,28 +1,14 @@
-# This is an example .goreleaser.yml file with some sensible defaults.
-# Make sure to check the documentation at https://goreleaser.com
-
-# The lines below are called `modelines`. See `:help modeline`
-# Feel free to remove those if you don't want/need to use them.
-# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-# vim: set ts=2 sw=2 tw=0 fo=cnqoj
-
 version: 2
 
-before:
-  hooks:
-    # You may remove this if you don't use go modules.
-    - go mod tidy
-    # you may remove this if you don't need go generate
-    - go generate ./...
+project_name: pokego
 
 builds:
   - env:
       - CGO_ENABLED=0
+    # main.go declares only `version`; release builds override it here.
     ldflags:
       - -s -w
       - -X main.version={{.Version}}
-      - -X main.commit={{.Commit}}
-      - -X main.date={{.Date}}
     goos:
       - linux
       - windows
@@ -42,11 +28,8 @@ archives:
     format_overrides:
       - goos: windows
         formats: [zip]
-
     files:
-          - LICENSE
-          - completions/*
-
+      - LICENSE
 
 changelog:
   sort: asc

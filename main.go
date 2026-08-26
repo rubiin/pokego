@@ -254,6 +254,9 @@ func newApp() *cli.Command {
 	app := &cli.Command{
 		Name:  "pokego",
 		Usage: "display Pokémon sprites in color directly in your terminal",
+		// Adds the hidden `completion bash|zsh|fish|pwsh` command and enables
+		// the --generate-shell-completion hook the scripts rely on.
+		EnableShellCompletion: true,
 		Flags: []cli.Flag{
 			&cli.BoolFlag{Name: "list", Aliases: []string{"l"}, Usage: "List all Pokémon"},
 			&cli.StringFlag{Name: "name", Aliases: []string{"n"}, Usage: "Select Pokémon by name"},
