@@ -386,7 +386,7 @@ func TestRandomGen8Coverage(t *testing.T) {
 	}
 	for n := range hisui {
 		if !seen[n] {
-			t.Errorf("%s (dex 899-905) was never sampled in 1200 draws", n)
+			t.Errorf("%s (dex 899-905) was never sampled in 2000 draws", n)
 		}
 	}
 }
@@ -1184,7 +1184,7 @@ func TestRandomGen2Coverage(t *testing.T) {
 		expected[allPokemon[i-1].Name] = true
 	}
 	seen := make(map[string]bool)
-	for i := 0; i < 500; i++ {
+	for i := 0; i < 2000; i++ {
 		out := capture(func() {
 			if err := showRandomPokemon("2", true, false); err != nil {
 				t.Fatal(err)
@@ -1356,7 +1356,7 @@ func TestRandomRangeAcrossBoundary(t *testing.T) {
 		}
 	}
 	seen := make(map[string]bool)
-	for i := 0; i < 200; i++ {
+	for i := 0; i < 2000; i++ {
 		out := capture(func() {
 			if err := showRandomPokemon("7-8", true, false); err != nil {
 				t.Fatal(err)
@@ -1712,7 +1712,7 @@ func TestRandomGen4Coverage(t *testing.T) {
 		expected[allPokemon[i-1].Name] = true
 	}
 	seen := make(map[string]bool)
-	for i := 0; i < 500; i++ {
+	for i := 0; i < 2000; i++ {
 		out := capture(func() {
 			if err := showRandomPokemon("4", true, false); err != nil {
 				t.Fatal(err)
