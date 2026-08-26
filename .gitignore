@@ -29,5 +29,5 @@ go.work
 builds
 # Added by goreleaser init:
 dist/
-
 opt.md
+pokego
