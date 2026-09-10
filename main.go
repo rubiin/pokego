@@ -169,6 +169,11 @@ func showPokemonByName(name string, showTitle, shiny bool, form string) error {
 					alternates = append(alternates, f)
 				}
 			}
+			// Include "regular" in the alternates list if it's the only form
+			// and there are alternate forms, so users see the full set.
+			if len(alternates) > 0 && len(p.Forms) > len(alternates) {
+				alternates = append([]string{"regular"}, alternates...)
+			}
 			if len(alternates) > 0 {
 				msg += "available alternate forms are:\n"
 				for _, f := range alternates {

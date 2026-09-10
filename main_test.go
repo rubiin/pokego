@@ -124,8 +124,8 @@ func TestInvalidFormListsAlternates(t *testing.T) {
 	if !strings.Contains(msg, "- alola-cap") {
 		t.Errorf("alternates list missing '- alola-cap':\n%s", msg)
 	}
-	if strings.Contains(msg, "- regular") {
-		t.Errorf("alternates list must not include 'regular':\n%s", msg)
+	if !strings.Contains(msg, "- regular") {
+		t.Errorf("alternates list must include 'regular':\n%s", msg)
 	}
 
 	// mudkip has no real alternates, so no list section should be shown.
@@ -967,8 +967,8 @@ func TestErrorAlternatesExcludesRegular(t *testing.T) {
 	if !strings.Contains(msg, "available alternate forms are:") {
 		t.Errorf("missing 'available alternate forms are:' in: %s", msg)
 	}
-	if strings.Contains(msg, "- regular") {
-		t.Errorf("alternates must not include 'regular': %s", msg)
+	if !strings.Contains(msg, "- regular") {
+		t.Errorf("alternates must include 'regular': %s", msg)
 	}
 	for _, want := range []string{"- gmax", "- mega-x", "- mega-y"} {
 		if !strings.Contains(msg, want) {
