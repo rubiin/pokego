@@ -43,7 +43,7 @@ func silent(fn func()) {
 	os.Stdout = devNull
 	defer func() {
 		os.Stdout = old
-		devNull.Close()
+		_ = devNull.Close()
 	}()
 	fn()
 }
@@ -278,11 +278,11 @@ func capture(fn func()) string {
 	os.Stdout = f
 	defer func() {
 		os.Stdout = old
-		f.Close()
-		os.Remove(f.Name())
+		_ = f.Close()
+		_ = os.Remove(f.Name())
 	}()
 	fn()
-	f.Close()
+	_ = f.Close()
 	b, err := os.ReadFile(f.Name())
 	if err != nil {
 		panic(err)
@@ -1144,11 +1144,11 @@ func capture2(fn func() error) (string, error) {
 	os.Stdout = f
 	defer func() {
 		os.Stdout = old
-		f.Close()
-		os.Remove(f.Name())
+		_ = f.Close()
+		_ = os.Remove(f.Name())
 	}()
 	err = fn()
-	f.Close()
+	_ = f.Close()
 	b, readErr := os.ReadFile(f.Name())
 	if readErr != nil {
 		panic(readErr)

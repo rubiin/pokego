@@ -18,4 +18,15 @@ release:
 	goreleaser release --clean
 
 test:
-	go test
+	go test ./...
+
+# Run golangci-lint
+lint:
+	golangci-lint run
+
+# Run golangci-lint with auto-fix
+lint-fix:
+	golangci-lint run --fix
+
+format:
+	golangci-lint fmt

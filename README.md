@@ -1,6 +1,7 @@
 # pokego
 
 ![CI](https://github.com/rubiin/pokego/actions/workflows/ci.yml/badge.svg)
+![golangci-lint](https://golangci-lint.run/badges/golangci-lint-badge.svg)
 ![AUR version](https://img.shields.io/aur/version/pokego-bin)
 ![Release](https://img.shields.io/github/v/release/rubiin/pokego)
 
@@ -98,6 +99,18 @@ go build -ldflags "-s -w" -o pokego .
 Then move the executable to a directory on your `PATH`.
 
 > **Note:** The binary is ~26 MB because every sprite is embedded in it — no external assets are needed at runtime.
+
+## Linting
+
+This project uses [golangci-lint](https://golangci-lint.run/) for static analysis.
+
+```sh
+# Run linters
+just lint
+
+# Run linters with auto-fix
+just lint-fix
+```
 
 ## Usage
 

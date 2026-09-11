@@ -117,9 +117,9 @@ func listPokemonNames() {
 	// one write(2) syscall per line (905 total); a single flush drops that to
 	// a handful of writes.
 	w := bufio.NewWriter(os.Stdout)
-	defer w.Flush()
+	defer func() { _ = w.Flush() }()
 	for _, p := range allPokemon {
-		fmt.Fprintln(w, p.Name)
+		_, _ = fmt.Fprintln(w, p.Name)
 	}
 }
 
@@ -297,7 +297,7 @@ func newApp() *cli.Command {
 				}
 				return showRandomPokemon(cmd.String("random"), !cmd.Bool("no-title"), cmd.Bool("shiny"))
 			default:
-				cli.ShowRootCommandHelp(cmd)
+				_ = cli.ShowRootCommandHelp(cmd)
 				return errors.New("no command or flags specified")
 			}
 			return nil
@@ -308,7 +308,7 @@ func newApp() *cli.Command {
 	// prints Action errors exactly once, to stderr, before they are returned
 	// to main, which only converts them into an exit code.
 	app.ExitErrHandler = func(ctx context.Context, cmd *cli.Command, err error) {
-		fmt.Fprintln(cmd.ErrWriter, err)
+		_, _ = fmt.Fprintln(cmd.ErrWriter, err)
 	}
 	return app
 }
