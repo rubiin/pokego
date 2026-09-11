@@ -20,6 +20,11 @@ jobs:
       - name: Test
         run: go test ./...
 
+      - name: Install golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: latest
+
       - name: Lint
         run: just lint
 
