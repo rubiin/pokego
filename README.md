@@ -1,7 +1,6 @@
 # pokego
 
 ![CI](https://github.com/rubiin/pokego/actions/workflows/ci.yml/badge.svg)
-![golangci-lint](https://golangci-lint.run/badges/golangci-lint-badge.svg)
 ![AUR version](https://img.shields.io/aur/version/pokego-bin)
 ![Release](https://img.shields.io/github/v/release/rubiin/pokego)
 
