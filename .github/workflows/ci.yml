@@ -26,7 +26,7 @@ jobs:
           version: latest
 
       - name: Lint
-        run: just lint
+        run: golangci-lint run
 
       - name: Build
         run: go build -ldflags "-s -w" -o pokego .
