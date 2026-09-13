@@ -175,25 +175,46 @@ Print a random Pokémon from generations 1, 3, and 6:
 pokego --random 1,3,6
 ```
 
-### Shell completions
+### Summary
 
-Pokego can generate shell completion scripts for bash, zsh, fish, and PowerShell:
+Text output ends with a summary line (`Summary: X alive, Y dead`). Disable it with `--summary=false` or `summary: false` in the config file. The `--json` output never includes the summary.
 
-```sh
-# .bashrc
+## Shell completions
+
+Tab completion for commands and flags is built in via the `completion` command.
+
+**Bash**
+
+```bash
 source <(pokego completion bash)
+```
 
-# .zshrc
+To load it in every shell, add that line to `~/.bashrc`, or install the script:
+
+```bash
+pokego completion bash > ~/.local/share/bash-completion/completions/pokego
+```
+
+**Zsh**
+
+```bash
 source <(pokego completion zsh)
+# or install:
+pokego completion zsh > "${fpath[1]}/_pokego"
+```
 
-# fish
+**Fish**
+
+```fish
+pokego completion fish | source
+# or install:
 pokego completion fish > ~/.config/fish/completions/pokego.fish
 ```
 
-For PowerShell, save the script and run it:
+**PowerShell**
 
-```sh
-pokego completion pwsh > ~\Documents\WindowsPowerShell\Scripts\pokego.ps1
+```powershell
+pokego completion powershell | Out-String | Invoke-Expression
 ```
 
 ### Shell integration

@@ -5,7 +5,7 @@ project_name: pokego
 builds:
   - env:
       - CGO_ENABLED=0
-    # main.go declares only `version`; release builds override it here.
+    # main.go declares `version`; release builds override it here.
     ldflags:
       - -s -w
       - -X main.version={{.Version}}
@@ -37,6 +37,33 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
+
+aurs:
+  - name: pokego-bin
+    homepage: https://github.com/rubiin/pokego
+    description: A fast, Go rewrite of [phoney badger's pokemon-colorscripts](https://gitlab.com/phoneybadger/pokemon-colorscripts) that prints Pokémon sprites in color directly in your terminal.
+    license: GPL-3.0-only
+    maintainers:
+      - "rubiin <roobin.bhandari@gmail.com>"
+    git_url: ssh://aur@aur.archlinux.org/pokego-bin.git
+    private_key: "{{ .Env.AUR_KEY }}"
+    provides:
+      - pokego
+    conflicts:
+      - pokego
+      - pokego-git
+    package: |-
+      # bin
+      install -Dm755 "./pokego" "${pkgdir}/usr/bin/pokego"
+      # license
+      install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/pokego/LICENSE"
+      # completions (generated at package time from the shipped binary)
+      ./pokego completion bash > pokego.bash
+      ./pokego completion zsh > _pokego
+      ./pokego completion fish > pokego.fish
+      install -Dm644 "pokego.bash" "${pkgdir}/usr/share/bash-completion/completions/pokego"
+      install -Dm644 "_pokego" "${pkgdir}/usr/share/zsh/site-functions/_pokego"
+      install -Dm644 "pokego.fish" "${pkgdir}/usr/share/fish/vendor_completions.d/pokego.fish"
 
 release:
   footer: >-
