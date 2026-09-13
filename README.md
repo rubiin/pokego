@@ -33,6 +33,10 @@ A fast, Go rewrite of [phoney badger's pokemon-colorscripts](https://gitlab.com/
 
 ## Installation
 
+```bash
+go install linkrot/cmd/linkrot@latest
+```
+
 ### Arch Linux
 
 Install the stable package from the AUR:
