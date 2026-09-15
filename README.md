@@ -1,8 +1,9 @@
 # pokego
 
-![CI](https://github.com/rubiin/pokego/actions/workflows/ci.yml/badge.svg)
-![AUR version](https://img.shields.io/aur/version/pokego-bin)
-![Release](https://img.shields.io/github/v/release/rubiin/pokego)
+[![CI](https://github.com/rubiin/pokego/actions/workflows/ci.yml/badge.svg)](https://github.com/rubiin/pokego/actions/workflows/ci.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/rubiin/pokego.svg)](https://pkg.go.dev/github.com/rubiin/pokego)
+[![Release](https://img.shields.io/github/v/release/rubiin/pokego)](https://github.com/rubiin/pokego/releases/latest)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
 A fast, Go rewrite of [phoney badger's pokemon-colorscripts](https://gitlab.com/phoneybadger/pokemon-colorscripts) that prints Pokémon sprites in color directly in your terminal.
 
@@ -263,3 +264,9 @@ Pokego's Pokémon sprites were sourced from [PokéSprite](https://msikma.github.
 - [pokeget](https://github.com/talwat/pokeget)
 - [pokeshell](https://github.com/acxz/pokeshell)
 - [krabby](https://github.com/yannjor/krabby)
+
+## License
+
+[GPL-3.0](./LICENSE)
+
+Made with ❤️ for opensource.
