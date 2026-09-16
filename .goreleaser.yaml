@@ -31,13 +31,6 @@ archives:
     files:
       - LICENSE
 
-changelog:
-  sort: asc
-  filters:
-    exclude:
-      - "^docs:"
-      - "^test:"
-
 aurs:
   - name: pokego-bin
     homepage: https://github.com/rubiin/pokego
@@ -64,6 +57,39 @@ aurs:
       install -Dm644 "pokego.bash" "${pkgdir}/usr/share/bash-completion/completions/pokego"
       install -Dm644 "_pokego" "${pkgdir}/usr/share/zsh/site-functions/_pokego"
       install -Dm644 "pokego.fish" "${pkgdir}/usr/share/fish/vendor_completions.d/pokego.fish"
+
+
+nfpms:
+  - package_name: ignit
+    file_name_template: '{{ .ConventionalFileName }}'
+    homepage: https://github.com/rubiin/ignit
+    description: Quickly generate .gitignore files for your projects from a curated list of environment templates.
+    license: GPL-3.0-only
+    maintainer: rubiin <roobin.bhandari@gmail.com>
+    formats:
+      - apk
+      - deb
+      - rpm
+    bindir: /usr/bin
+    contents:
+      - src: ./LICENSE
+        dst: /usr/share/licenses/ignit/LICENSE
+
+changelog:
+  sort: desc
+  use: git
+
+  groups:
+    - title: 🚀 New Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: "🐛 Bug Fixes"
+      regexp: '^.*?(fix|bug)(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Others
+      order: 999
+
+
 
 release:
   footer: >-
