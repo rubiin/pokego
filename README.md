@@ -35,7 +35,7 @@ A fast, Go rewrite of [phoney badger's pokemon-colorscripts](https://gitlab.com/
 ## Installation
 
 ```bash
-go install linkrot/cmd/linkrot@latest
+go install github.com/rubin/pokego@latest
 ```
 
 ### Arch Linux
@@ -186,10 +186,6 @@ Print a random Pokémon from generations 1, 3, and 6:
 pokego --random 1,3,6
 ```
 
-### Summary
-
-Text output ends with a summary line (`Summary: X alive, Y dead`). Disable it with `--summary=false` or `summary: false` in the config file. The `--json` output never includes the summary.
-
 ## Shell completions
 
 Tab completion for commands and flags is built in via the `completion` command.
@@ -234,14 +230,14 @@ Add a Pokémon to your terminal greeting by appending one of these to your `.zsh
 
 ```sh
 # Random Pokémon on every new shell
-pokego --random --no-title
+pokego --random 1-8 --no-title
 ```
 
 For fish, add it to your `fish_greeting` function:
 
 ```fish
 function fish_greeting
-    pokego --random --no-title
+    pokego --random 1-8 --no-title
 end
 ```
 
