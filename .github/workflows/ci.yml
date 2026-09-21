@@ -33,4 +33,4 @@ jobs:
         run: |
           VERSION=$(git describe --tags --always --dirty 2>/dev/null || echo dev)
           echo "Building version: ${VERSION}"
-          go build -ldflags "-s -w -X main.version=${VERSION}" -o pokego .
+          go build -trimpath -buildvcs=false -ldflags "-s -w -X main.version=${VERSION}" -o pokego .

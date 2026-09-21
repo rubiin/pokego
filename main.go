@@ -295,8 +295,6 @@ func newApp() *cobra.Command {
 	f.BoolVarP(&list, "list", "l", false, "List all Pokémon")
 	f.StringVarP(&name, "name", "n", "", "Select Pokémon by name")
 	f.StringVarP(&form, "form", "f", "", "Show alternate form of a Pokémon")
-	// pflag shorthands are single ASCII characters, so the old urfave `-nt`
-	// alias for --no-title can't be expressed.
 	f.BoolVarP(&noTitle, "no-title", "", false, "Do not display Pokémon name")
 	f.BoolVarP(&shiny, "shiny", "s", false, "Show shiny version")
 	f.StringVarP(&random, "random", "r", "", "Show random Pokémon, optionally by generation or range")

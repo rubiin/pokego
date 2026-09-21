@@ -97,7 +97,7 @@ just build
 Or without `just`:
 
 ```sh
-go build -ldflags "-s -w" -o pokego .
+go build -trimpath -buildvcs=false -ldflags "-s -w" -o pokego .
 ```
 
 Then move the executable to a directory on your `PATH`.
@@ -254,7 +254,7 @@ Start time is the mean of 5 consecutive runs using the `time` coreutil on an Ace
 | **Krabby**         | 0.016          | 23        | Rust     |
 | **Pokemonscripts** | 0.060          | 43        | Python   |
 
-The ~27 MB Pokego binary is dominated by the embedded sprite assets (the raw corpus is ~29 MB); `go build -ldflags "-s -w"` trims it to ~26 MB.
+The ~27 MB Pokego binary is dominated by the embedded sprite assets (the raw corpus is ~29 MB); `go build -trimpath -buildvcs=false -ldflags "-s -w"` trims it to ~26 MB.
 
 ## Credits
 

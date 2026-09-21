@@ -5,6 +5,9 @@ project_name: pokego
 builds:
   - env:
       - CGO_ENABLED=0
+    flags:
+      - -trimpath
+      - -buildvcs=false
     # main.go declares `version`; release builds override it here.
     ldflags:
       - -s -w
