@@ -121,21 +121,27 @@ just lint-fix
 Run `pokego --help` to see all options.
 
 ```sh
-NAME:
-   pokego - display Pokémon sprites in color directly in your terminal
+display Pokémon sprites in color directly in your terminal
 
-USAGE:
-   pokego [global options]
+Usage:
+  pokego [flags]
+  pokego [command]
 
-GLOBAL OPTIONS:
-   --list, -l                  List all Pokémon
-   --name string, -n string    Select Pokémon by name
-   --form string, -f string    Show alternate form of a Pokémon
-   --no-title, --nt            Do not display Pokémon name
-   --shiny, -s                 Show shiny version
-   --random string, -r string  Show random Pokémon, optionally by generation or range
-   --version, -v               Show CLI version
-   --help, -h                  show help
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  help        Help about any command
+
+Flags:
+  -f, --form string     Show alternate form of a Pokémon
+  -h, --help            help for pokego
+  -l, --list            List all Pokémon
+  -n, --name string     Select Pokémon by name
+      --no-title        Do not display Pokémon name
+  -r, --random string   Show random Pokémon, optionally by generation or range
+  -s, --shiny           Show shiny version
+  -v, --version         Show CLI version
+
+Use "pokego [command] --help" for more information about a command.
 ```
 
 `--list` prints the base name of every Pokémon; alternate forms are not listed.

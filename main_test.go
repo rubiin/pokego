@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/urfave/cli/v3"
+	"github.com/spf13/cobra"
 )
 
 // Load the embedded data once for all tests. loadData is idempotent.
@@ -24,12 +24,20 @@ func TestMain(m *testing.M) {
 // silent and capture swap the process-global os.Stdout; they must not be used
 // with t.Parallel.
 
-// newTestApp returns a fresh app with error output discarded, so the
-// ExitErrHandler doesn't spam test logs on expected error paths.
-func newTestApp() *cli.Command {
+// newTestApp returns a fresh app with error output discarded, so cobra's
+// "Error:" line doesn't spam test logs on expected error paths.
+func newTestApp() *cobra.Command {
 	app := newApp()
-	app.ErrWriter = io.Discard
+	app.SetErr(io.Discard)
 	return app
+}
+
+// runApp executes app with args (no program name) and returns the result,
+// like the old `newTestApp().Run(ctx, []string{"pokego", ...})`. Use a fresh
+// app per call: pflag retains flag values across Execute calls.
+func runApp(app *cobra.Command, args ...string) error {
+	app.SetArgs(args)
+	return app.ExecuteContext(context.Background())
 }
 
 // silent runs fn with stdout redirected to the null device so sprite output
@@ -194,10 +202,11 @@ func TestShowRandomPokemonValid(t *testing.T) {
 	}
 }
 
-// Action-level behavior (bug 8): errors are returned through the cli Action.
+// Action-level behavior (bug 8): errors are returned through the command's
+// RunE, not os.Exit.
 func TestAction(t *testing.T) {
 	run := func(args ...string) error {
-		return newTestApp().Run(context.Background(), append([]string{"pokego"}, args...))
+		return runApp(newTestApp(), args...)
 	}
 
 	silent(func() {
@@ -233,13 +242,13 @@ func TestAction(t *testing.T) {
 	})
 }
 
-// EnableShellCompletion must expose the hidden `completion` command for every
-// supported shell, with each script referencing the program name.
+// The shell completion command must expose a script for every supported
+// shell, with each script referencing the program name.
 func TestShellCompletion(t *testing.T) {
 	run := func(args ...string) string {
 		var err error
 		out := capture(func() {
-			err = newTestApp().Run(context.Background(), append([]string{"pokego"}, args...))
+			err = runApp(newTestApp(), args...)
 		})
 		if err != nil {
 			t.Errorf("%v: unexpected error %v", args, err)
@@ -247,28 +256,22 @@ func TestShellCompletion(t *testing.T) {
 		return out
 	}
 
-	for _, shell := range []string{"bash", "zsh", "fish", "pwsh"} {
+	for _, shell := range []string{"bash", "zsh", "fish", "powershell"} {
 		out := run("completion", shell)
-		// pwsh completion scripts use $MyInvocation.MyCommand.Name to
-		// resolve the program name at runtime, so they don't hardcode it.
-		if shell == "pwsh" {
-			if !strings.Contains(out, "Register-ArgumentCompleter") {
-				t.Errorf("completion pwsh: script missing Register-ArgumentCompleter")
-			}
-		} else if !strings.Contains(out, "pokego") {
+		if !strings.Contains(out, "pokego") {
 			t.Errorf("completion %s: script missing program name", shell)
 		}
 	}
 
 	// An unknown shell must fail rather than print a bogus script.
-	if err := newTestApp().Run(context.Background(), []string{"pokego", "completion", "tcsh"}); err == nil {
+	if err := runApp(newTestApp(), "completion", "tcsh"); err == nil {
 		t.Error("completion tcsh: expected error")
 	}
 }
 
 // capture runs fn with stdout redirected to a temp file and returns the
-// output it wrote. cli v3's Setup assigns cmd.Writer from os.Stdout inside
-// Run, so this also captures --help and other cli-rendered output.
+// output it wrote. cobra resolves its output writer lazily from os.Stdout, so
+// this also captures --help and other cobra-rendered output.
 func capture(fn func()) string {
 	old := os.Stdout
 	f, err := os.CreateTemp("", "pokego-out-*")
@@ -417,7 +420,7 @@ func TestActionOutput(t *testing.T) {
 	run := func(args ...string) (string, error) {
 		var err error
 		out := capture(func() {
-			err = newTestApp().Run(context.Background(), append([]string{"pokego"}, args...))
+			err = runApp(newTestApp(), args...)
 		})
 		return out, err
 	}
@@ -453,23 +456,23 @@ func TestActionOutput(t *testing.T) {
 	if err == nil {
 		t.Error("no args: expected error")
 	}
-	if !strings.Contains(out, "GLOBAL OPTIONS") {
-		t.Error("no args: help output missing GLOBAL OPTIONS")
+	if !strings.Contains(out, "Usage:") {
+		t.Error("no args: help output missing usage section")
 	}
 }
 
 func TestActionAliases(t *testing.T) {
 	run := func(args ...string) error {
-		return newTestApp().Run(context.Background(), append([]string{"pokego"}, args...))
+		return runApp(newTestApp(), args...)
 	}
 	silent(func() {
 		for _, args := range [][]string{
-			{"-n", "pikachu", "-nt"},
+			{"-n", "pikachu", "--no-title"},
 			{"-l"},
 			{"-r", "3"},
 			{"-v"},
 			{"-n", "pikachu", "-f", "alola-cap"},
-			{"-n", "pikachu", "-s", "-nt"},
+			{"-n", "pikachu", "-s", "--no-title"},
 			{"-r", "2", "-s"},
 		} {
 			if err := run(args...); err != nil {
@@ -485,7 +488,7 @@ func TestActionAliases(t *testing.T) {
 // Bug 2: --form regular is a no-op through the full CLI path.
 func TestActionFormRegular(t *testing.T) {
 	run := func(args ...string) error {
-		return newTestApp().Run(context.Background(), append([]string{"pokego"}, args...))
+		return runApp(newTestApp(), args...)
 	}
 	silent(func() {
 		if err := run("--name", "bulbasaur", "--form", "regular"); err != nil {
@@ -494,22 +497,19 @@ func TestActionFormRegular(t *testing.T) {
 	})
 }
 
-// Bug 4: errors must be printed exactly once to stderr — flag-usage errors
-// by cli itself, Action errors by the ExitErrHandler — and both must surface
-// as a returned error (which main maps to exit code 1).
 // isSpriteOutput reports whether out looks like sprite art: after leading
 // indentation it must start with an ANSI escape sequence (a title line would not).
 func isSpriteOutput(out string) bool {
 	return strings.HasPrefix(strings.TrimLeft(out, " \t"), "\x1b[")
 }
 
-// Deliberately locks the Action's switch order: list > version > name > random.
+// Deliberately locks the RunE's switch order: list > version > name > random.
 // Reordering the switch for a legitimate reason will break this test on purpose.
 func TestFlagPrecedence(t *testing.T) {
 	run := func(args ...string) (string, error) {
 		var err error
 		out := capture(func() {
-			err = newTestApp().Run(context.Background(), append([]string{"pokego"}, args...))
+			err = runApp(newTestApp(), args...)
 		})
 		return out, err
 	}
@@ -547,7 +547,7 @@ func TestVersionInjected(t *testing.T) {
 	version = "1.2.3"
 
 	out := capture(func() {
-		if err := newApp().Run(context.Background(), []string{"pokego", "--version"}); err != nil {
+		if err := runApp(newApp(), "--version"); err != nil {
 			t.Error(err)
 		}
 	})
@@ -559,11 +559,11 @@ func TestVersionInjected(t *testing.T) {
 // -h is an alias for --help.
 func TestHelpAlias(t *testing.T) {
 	out := capture(func() {
-		if err := newApp().Run(context.Background(), []string{"pokego", "-h"}); err != nil {
+		if err := runApp(newTestApp(), "-h"); err != nil {
 			t.Errorf("-h: unexpected error %v", err)
 		}
 	})
-	if !strings.Contains(out, "GLOBAL OPTIONS") || !strings.Contains(out, "--random") {
+	if !strings.Contains(out, "Usage:") || !strings.Contains(out, "--random") {
 		t.Error("-h output missing expected help content")
 	}
 }
@@ -641,7 +641,7 @@ func TestSpriteIsAnsiArt(t *testing.T) {
 // --random --no-title must not emit a title; the raw sprite is ANSI art.
 func TestRandomNoTitleOutput(t *testing.T) {
 	out := capture(func() {
-		if err := newTestApp().Run(context.Background(), []string{"pokego", "--random", "8", "--no-title"}); err != nil {
+		if err := runApp(newTestApp(), "--random", "8", "--no-title"); err != nil {
 			t.Fatal(err)
 		}
 	})
@@ -669,29 +669,31 @@ func TestDexOrder(t *testing.T) {
 	}
 }
 
+// Bug 4: errors print exactly once to stderr and also return to main (exit
+// code 1). SilenceUsage (set in newApp) skips the redundant usage dump.
 func TestErrorPrintingOnce(t *testing.T) {
 	var out, errBuf bytes.Buffer
 	app := newApp()
-	app.Writer = &out
-	app.ErrWriter = &errBuf
+	app.SetOut(&out)
+	app.SetErr(&errBuf)
 
-	// Flag-usage error: cli prints "Incorrect Usage: ..." itself; main must
-	// not re-print it.
-	err := app.Run(context.Background(), []string{"pokego", "--form"})
+	// Flag-usage error: cobra prints "Error: ..." itself; main must not
+	// re-print it.
+	err := runApp(app, "--form")
 	if err == nil {
 		t.Fatal("--form without a value: expected parse error")
 	}
 	if got := strings.Count(errBuf.String(), "flag needs an argument"); got != 1 {
 		t.Errorf("usage error printed %d times, want 1:\n%s", got, errBuf.String())
 	}
-	// The help for a usage error goes to stdout, not stderr.
-	if !strings.Contains(out.String(), "GLOBAL OPTIONS") {
-		t.Errorf("usage-error help missing from stdout:\n%s", out.String())
+	// SilenceUsage means the help template is not dumped next to the error.
+	if strings.Contains(errBuf.String(), "Usage:") {
+		t.Errorf("usage-error help should not be printed:\n%s", errBuf.String())
 	}
 
-	// Action error: printed once by the ExitErrHandler.
+	// Command error: printed once by cobra, in addition to being returned.
 	errBuf.Reset()
-	err = app.Run(context.Background(), []string{"pokego", "--name", "missingmon"})
+	err = runApp(app, "--name", "missingmon")
 	if err == nil {
 		t.Fatal("--name missingmon: expected error")
 	}
@@ -1046,7 +1048,7 @@ func TestShinyFormSpriteMatchesFile(t *testing.T) {
 func TestRandomNoTitleAllGens(t *testing.T) {
 	for gen := range generations {
 		out := capture(func() {
-			if err := newTestApp().Run(context.Background(), []string{"pokego", "--random", gen, "--no-title"}); err != nil {
+			if err := runApp(newTestApp(), "--random", gen, "--no-title"); err != nil {
 				t.Fatal(err)
 			}
 		})
@@ -1067,7 +1069,7 @@ func TestListLineCountMatchesData(t *testing.T) {
 
 // Action with --random and --form must error.
 func TestActionRandomWithFormError(t *testing.T) {
-	err := newTestApp().Run(context.Background(), []string{"pokego", "--random", "3", "--form", "mega"})
+	err := runApp(newTestApp(), "--random", "3", "--form", "mega")
 	if err == nil {
 		t.Error("--random with --form: expected error")
 	}
@@ -1076,7 +1078,7 @@ func TestActionRandomWithFormError(t *testing.T) {
 // Action with --name and --random: name wins (tested but worth reinforcing).
 func TestActionNameOverRandom(t *testing.T) {
 	out, err := capture2(func() error {
-		return newTestApp().Run(context.Background(), []string{"pokego", "--name", "bulbasaur", "--random", "1"})
+		return runApp(newTestApp(), "--name", "bulbasaur", "--random", "1")
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -1089,7 +1091,7 @@ func TestActionNameOverRandom(t *testing.T) {
 // Action with --version and --name: version wins.
 func TestActionVersionOverName(t *testing.T) {
 	out, err := capture2(func() error {
-		return newTestApp().Run(context.Background(), []string{"pokego", "--version", "--name", "pikachu"})
+		return runApp(newTestApp(), "--version", "--name", "pikachu")
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -1102,7 +1104,7 @@ func TestActionVersionOverName(t *testing.T) {
 // Action with --list and --name: list wins.
 func TestActionListOverName(t *testing.T) {
 	out, err := capture2(func() error {
-		return newTestApp().Run(context.Background(), []string{"pokego", "--list", "--name", "pikachu"})
+		return runApp(newTestApp(), "--list", "--name", "pikachu")
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -1222,7 +1224,7 @@ func TestRandomShinyTitleSuffix(t *testing.T) {
 // --random with no title and no shiny must be pure ANSI art.
 func TestRandomNoTitleNoShinyPureArt(t *testing.T) {
 	out := capture(func() {
-		if err := newTestApp().Run(context.Background(), []string{"pokego", "--random", "3", "--no-title"}); err != nil {
+		if err := runApp(newTestApp(), "--random", "3", "--no-title"); err != nil {
 			t.Fatal(err)
 		}
 	})
@@ -1457,7 +1459,7 @@ func TestRegularFormAppendedAsSuffix(t *testing.T) {
 func TestRandomGen8AlwaysOutput(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		out := capture(func() {
-			if err := newTestApp().Run(context.Background(), []string{"pokego", "--random", "8", "--no-title"}); err != nil {
+			if err := runApp(newTestApp(), "--random", "8", "--no-title"); err != nil {
 				t.Fatal(err)
 			}
 		})
@@ -1491,7 +1493,7 @@ func TestRandomRange3to5(t *testing.T) {
 
 // Action with --random and multiple invalid generations.
 func TestActionRandomMultipleInvalid(t *testing.T) {
-	err := newTestApp().Run(context.Background(), []string{"pokego", "--random", "99,100"})
+	err := runApp(newTestApp(), "--random", "99,100")
 	if err == nil {
 		t.Error("--random 99,100: expected error")
 	}
@@ -1499,7 +1501,7 @@ func TestActionRandomMultipleInvalid(t *testing.T) {
 
 // Action with --random range and --form must error.
 func TestActionRandomRangeWithFormError(t *testing.T) {
-	err := newTestApp().Run(context.Background(), []string{"pokego", "--random", "1-3", "--form", "mega"})
+	err := runApp(newTestApp(), "--random", "1-3", "--form", "mega")
 	if err == nil {
 		t.Error("--random 1-3 with --form: expected error")
 	}
@@ -1511,7 +1513,7 @@ func TestVersionReflectsVar(t *testing.T) {
 	defer func() { version = old }()
 	version = "9.9.9"
 	out := capture(func() {
-		if err := newApp().Run(context.Background(), []string{"pokego", "--version"}); err != nil {
+		if err := runApp(newApp(), "--version"); err != nil {
 			t.Fatal(err)
 		}
 	})
@@ -1607,7 +1609,7 @@ func TestRandomSingleGenList(t *testing.T) {
 // --list alias -l must produce the same output.
 func TestListAliasOutput(t *testing.T) {
 	out := capture(func() {
-		if err := newTestApp().Run(context.Background(), []string{"pokego", "-l"}); err != nil {
+		if err := runApp(newTestApp(), "-l"); err != nil {
 			t.Fatal(err)
 		}
 	})
@@ -1620,8 +1622,8 @@ func TestListAliasOutput(t *testing.T) {
 // --shiny alias -s with --name must work.
 func TestShinyAliasWithNames(t *testing.T) {
 	silent(func() {
-		if err := newTestApp().Run(context.Background(), []string{"pokego", "-n", "pikachu", "-s", "-nt"}); err != nil {
-			t.Errorf("-n pikachu -s -nt: %v", err)
+		if err := runApp(newTestApp(), "-n", "pikachu", "-s", "--no-title"); err != nil {
+			t.Errorf("-n pikachu -s --no-title: %v", err)
 		}
 	})
 }
@@ -1629,7 +1631,7 @@ func TestShinyAliasWithNames(t *testing.T) {
 // --random alias -r with generation list.
 func TestRandomAliasWithList(t *testing.T) {
 	silent(func() {
-		if err := newTestApp().Run(context.Background(), []string{"pokego", "-r", "1,3,6"}); err != nil {
+		if err := runApp(newTestApp(), "-r", "1,3,6"); err != nil {
 			t.Errorf("-r 1,3,6: %v", err)
 		}
 	})
@@ -1638,7 +1640,7 @@ func TestRandomAliasWithList(t *testing.T) {
 // --form alias -f with valid form.
 func TestFormAliasWithValidForm(t *testing.T) {
 	silent(func() {
-		if err := newTestApp().Run(context.Background(), []string{"pokego", "-n", "pikachu", "-f", "alola-cap"}); err != nil {
+		if err := runApp(newTestApp(), "-n", "pikachu", "-f", "alola-cap"); err != nil {
 			t.Errorf("-n pikachu -f alola-cap: %v", err)
 		}
 	})
@@ -1647,7 +1649,7 @@ func TestFormAliasWithValidForm(t *testing.T) {
 // --version alias -v must work.
 func TestVersionAlias(t *testing.T) {
 	out := capture(func() {
-		if err := newTestApp().Run(context.Background(), []string{"pokego", "-v"}); err != nil {
+		if err := runApp(newTestApp(), "-v"); err != nil {
 			t.Fatal(err)
 		}
 	})
@@ -1656,10 +1658,10 @@ func TestVersionAlias(t *testing.T) {
 	}
 }
 
-// --name alias -n with --form alias -f and --no-title alias -nt.
+// --name alias -n with --form alias -f and --no-title.
 func TestMultipleAliases(t *testing.T) {
 	silent(func() {
-		if err := newTestApp().Run(context.Background(), []string{"pokego", "-n", "pikachu", "-f", "alola-cap", "-nt"}); err != nil {
+		if err := runApp(newTestApp(), "-n", "pikachu", "-f", "alola-cap", "--no-title"); err != nil {
 			t.Errorf("multiple aliases: %v", err)
 		}
 	})

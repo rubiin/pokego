@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"context"
 	"embed"
 	"encoding/json"
 	"errors"
@@ -12,7 +11,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/urfave/cli/v3"
+	"github.com/spf13/cobra"
 )
 
 type Pokemon struct {
@@ -21,18 +20,13 @@ type Pokemon struct {
 }
 
 var (
-	// Default so source builds print something useful; release builds
-	// override it via -ldflags "-X main.version=...".
+	// Overridden by release builds via -ldflags "-X main.version=...".
 	version = "dev"
 
-	// Cached Pokémon data
+	// Cached Pokémon data.
 	allPokemon []Pokemon
-	// pokemonIndex maps names to pointers INTO allPokemon. This is a latent
-	// hazard: if anything ever appends to (or re-slices) allPokemon, the
-	// backing array may be reallocated and every stored pointer dangles.
-	// Safe today — buildIndex() runs once, right after loadData(), and the
-	// slice is never mutated afterwards — but future code must not append
-	// to allPokemon after buildIndex() without rebuilding the index.
+	// Name→entry pointers into allPokemon. Don't append to allPokemon after
+	// buildIndex() — the pointers would dangle.
 	pokemonIndex map[string]*Pokemon
 )
 
@@ -60,10 +54,9 @@ var generations = map[string][2]int{
 
 // --- Helpers ---
 
-// loadData reads and parses pokemon.json into allPokemon and derives the final
-// generation's ceiling from the data length (so dex 899-905 are reachable via
-// --random). embed.FS paths must use forward slashes on every platform, so use
-// path.Join (never filepath.Join, whose backslashes break Windows).
+// loadData parses pokemon.json and extends the last generation to the data
+// length so dex 899-905 are reachable via --random. Use path.Join: embed
+// paths always use forward slashes (filepath.Join would break Windows).
 func loadData() error {
 	data, err := assets.ReadFile(path.Join(rootDir, "pokemon.json"))
 	if err != nil {
@@ -73,10 +66,6 @@ func loadData() error {
 		return fmt.Errorf("parsing pokemon data: %w", err)
 	}
 
-	// The canonical ranges in `generations` end before the data does — the
-	// Hisui Pokémon (dex 899-905) sit past gen 8's range. Derive the final
-	// generation's ceiling from the real data length so every Pokémon is
-	// reachable via --random.
 	lastGen, lastEnd := "", 0
 	for g, r := range generations {
 		if r[1] > lastEnd {
@@ -90,8 +79,7 @@ func loadData() error {
 	return nil
 }
 
-// buildIndex builds the name→Pokemon lookup map from allPokemon. Only the
-// --name path needs it, so it is built separately from loadData.
+// buildIndex precomputes the name→Pokemon map used by --name.
 func buildIndex() {
 	pokemonIndex = make(map[string]*Pokemon, len(allPokemon))
 	for i := range allPokemon {
@@ -104,18 +92,16 @@ func printFile(path string) error {
 	if err != nil {
 		return fmt.Errorf("error reading file: %w", err)
 	}
-	// Write the raw bytes: fmt.Print(string(content)) would copy the whole
-	// sprite into a new string first.
+	// Write raw bytes: fmt.Print(string(content)) would copy the sprite.
 	if _, err := os.Stdout.Write(content); err != nil {
 		return err
 	}
 	return nil
 }
 
+// listPokemonNames prints one name per line, buffered to avoid a syscall per
+// name (905 total).
 func listPokemonNames() {
-	// Buffer the output: fmt.Println to the unbuffered os.Stdout would issue
-	// one write(2) syscall per line (905 total); a single flush drops that to
-	// a handful of writes.
 	w := bufio.NewWriter(os.Stdout)
 	defer func() { _ = w.Flush() }()
 	for _, p := range allPokemon {
@@ -123,9 +109,9 @@ func listPokemonNames() {
 	}
 }
 
-// printPokemon writes the sprite (and optional title) for a known-valid
-// Pokemon whose name already includes any form suffix. --random uses this
-// directly (the name comes from allPokemon), so it never needs the lookup map.
+// printPokemon writes the sprite for a name that is already known valid, with
+// an optional title and shiny color. --random passes names straight from
+// allPokemon, so it never needs the lookup map.
 func printPokemon(name string, showTitle, shiny bool) error {
 	colorSubdir := regularSubdir
 	if shiny {
@@ -151,8 +137,8 @@ func showPokemonByName(name string, showTitle, shiny bool, form string) error {
 		return fmt.Errorf("invalid pokemon %s", name)
 	}
 
-	// "regular" is the pokesprite default form listed for every Pokémon, but
-	// no "name-regular" sprite files exist — treat it as "no form".
+	// "regular" is the pokesprite default: no "name-regular" sprite files
+	// exist, so treat it as no form.
 	if form != "" && form != "regular" {
 		valid := false
 		for _, f := range p.Forms {
@@ -169,8 +155,8 @@ func showPokemonByName(name string, showTitle, shiny bool, form string) error {
 					alternates = append(alternates, f)
 				}
 			}
-			// Include "regular" in the alternates list if it's the only form
-			// and there are alternate forms, so users see the full set.
+			// Show "regular" too when it's the only alternate, so users see
+			// the full set.
 			if len(alternates) > 0 && len(p.Forms) > len(alternates) {
 				alternates = append([]string{"regular"}, alternates...)
 			}
@@ -189,8 +175,7 @@ func showPokemonByName(name string, showTitle, shiny bool, form string) error {
 }
 
 func showRandomPokemon(genStr string, showTitle, shiny bool) error {
-	// Split on commas, dropping empty entries so inputs like "1," or ",,1,3"
-	// don't randomly select an empty generation.
+	// Drop empty entries so "1," or ",,1,3" don't select an empty generation.
 	var gens []string
 	for _, g := range strings.Split(genStr, ",") {
 		if g = strings.TrimSpace(g); g != "" {
@@ -203,8 +188,7 @@ func showRandomPokemon(genStr string, showTitle, shiny bool) error {
 
 	var startGen, endGen string
 	if len(gens) > 1 {
-		// Comma-separated list: every entry must be a plain generation, and
-		// ranges (like "1,2-3") can't be mixed in.
+		// List entries must be plain generations; ranges can't be mixed in.
 		for _, g := range gens {
 			if strings.Contains(g, "-") {
 				return fmt.Errorf("cannot mix generation ranges with lists: '%s'", genStr)
@@ -238,8 +222,7 @@ func showRandomPokemon(genStr string, showTitle, shiny bool) error {
 		end = len(allPokemon)
 	}
 
-	// Guard against reversed ranges like "3-1": rand.Intn would get a
-	// negative argument and panic with "invalid argument to Intn".
+	// Guard reversed ranges like "3-1": rand.Intn would panic on a negative.
 	if startIdx[0] > end {
 		return fmt.Errorf("invalid generation range '%s'", genStr)
 	}
@@ -250,71 +233,112 @@ func showRandomPokemon(genStr string, showTitle, shiny bool) error {
 	if !shiny && rand.Float64() <= shinyRate {
 		shiny = true
 	}
-	// The name comes straight from allPokemon, so it is always valid and the
-	// lookup map (built only for --name) is not needed here.
+	// The name comes from allPokemon, so it is always valid; no lookup needed.
 	return printPokemon(randomPokemon, showTitle, shiny)
 }
 
-func newApp() *cli.Command {
-	app := &cli.Command{
-		Name:  "pokego",
-		Usage: "display Pokémon sprites in color directly in your terminal",
-		// Adds the hidden `completion bash|zsh|fish|pwsh` command and enables
-		// the --generate-shell-completion hook the scripts rely on.
-		EnableShellCompletion: true,
-		Flags: []cli.Flag{
-			&cli.BoolFlag{Name: "list", Aliases: []string{"l"}, Usage: "List all Pokémon"},
-			&cli.StringFlag{Name: "name", Aliases: []string{"n"}, Usage: "Select Pokémon by name"},
-			&cli.StringFlag{Name: "form", Aliases: []string{"f"}, Usage: "Show alternate form of a Pokémon"},
-			&cli.BoolFlag{Name: "no-title", Aliases: []string{"nt"}, Usage: "Do not display Pokémon name"},
-			&cli.BoolFlag{Name: "shiny", Aliases: []string{"s"}, Usage: "Show shiny version"},
-			&cli.StringFlag{Name: "random", Aliases: []string{"r"}, Usage: "Show random Pokémon, optionally by generation or range"},
-			&cli.BoolFlag{Name: "version", Aliases: []string{"v"}, Usage: "Show CLI version"},
-		},
-		Action: func(ctx context.Context, cmd *cli.Command) error {
-			// Pokemon data is loaded lazily: --version and --help never touch
-			// the JSON, and --list/--name/--random load it only when needed.
+// --- CLI ---
+
+func newApp() *cobra.Command {
+	var (
+		list, showVersion, noTitle, shiny bool
+		name, form, random                string
+	)
+
+	app := &cobra.Command{
+		Use:   "pokego",
+		Short: "display Pokémon sprites in color directly in your terminal",
+		// Accept positional args (and ignore them), like the old flag CLI;
+		// otherwise cobra would report them as unknown commands.
+		Args: cobra.ArbitraryArgs,
+		// Suppress the usage dump cobra appends to errors; help is printed
+		// only in the default branch below when no mode flag was given.
+		SilenceUsage: true,
+		// The built-in completion command prints help instead of failing on
+		// unknown shells, so a validating one is added below.
+		CompletionOptions: cobra.CompletionOptions{DisableDefaultCmd: true},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Payload loads lazily: --version and --help never touch the JSON.
 			switch {
-			case cmd.Bool("list"):
+			case list:
 				if err := loadData(); err != nil {
 					return err
 				}
 				listPokemonNames()
-			case cmd.Bool("version"):
+				return nil
+			case showVersion:
 				fmt.Println(version)
-			case cmd.String("name") != "":
+				return nil
+			case name != "":
 				if err := loadData(); err != nil {
 					return err
 				}
 				buildIndex()
-				return showPokemonByName(cmd.String("name"), !cmd.Bool("no-title"), cmd.Bool("shiny"), cmd.String("form"))
-			case cmd.String("random") != "":
-				if cmd.String("form") != "" {
+				return showPokemonByName(name, !noTitle, shiny, form)
+			case random != "":
+				if form != "" {
 					return errors.New("--form flag unexpected with --random")
 				}
 				if err := loadData(); err != nil {
 					return err
 				}
-				return showRandomPokemon(cmd.String("random"), !cmd.Bool("no-title"), cmd.Bool("shiny"))
+				return showRandomPokemon(random, !noTitle, shiny)
 			default:
-				_ = cli.ShowRootCommandHelp(cmd)
+				// Help to stdout like the old CLI; the error goes to stderr.
+				_ = cmd.Help()
 				return errors.New("no command or flags specified")
 			}
-			return nil
 		},
 	}
 
-	// cli prints flag-usage errors itself ("Incorrect Usage: ..."); this
-	// prints Action errors exactly once, to stderr, before they are returned
-	// to main, which only converts them into an exit code.
-	app.ExitErrHandler = func(ctx context.Context, cmd *cli.Command, err error) {
-		_, _ = fmt.Fprintln(cmd.ErrWriter, err)
-	}
+	f := app.Flags()
+	f.BoolVarP(&list, "list", "l", false, "List all Pokémon")
+	f.StringVarP(&name, "name", "n", "", "Select Pokémon by name")
+	f.StringVarP(&form, "form", "f", "", "Show alternate form of a Pokémon")
+	// pflag shorthands are single ASCII characters, so the old urfave `-nt`
+	// alias for --no-title can't be expressed.
+	f.BoolVarP(&noTitle, "no-title", "", false, "Do not display Pokémon name")
+	f.BoolVarP(&shiny, "shiny", "s", false, "Show shiny version")
+	f.StringVarP(&random, "random", "r", "", "Show random Pokémon, optionally by generation or range")
+	f.BoolVarP(&showVersion, "version", "v", false, "Show CLI version")
+
+	app.AddCommand(newCompletionCmd())
+
 	return app
 }
 
+// newCompletionCmd generates shell completion scripts and only accepts the
+// shells it knows; unknown ones fail instead of printing help.
+func newCompletionCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "completion [bash|zsh|fish|powershell]",
+		Short: "Generate the autocompletion script for the specified shell",
+		Args: cobra.MatchAll(cobra.ExactArgs(1), func(cmd *cobra.Command, args []string) error {
+			switch args[0] {
+			case "bash", "zsh", "fish", "powershell":
+				return nil
+			default:
+				return fmt.Errorf("unsupported shell %q (choose bash, zsh, fish, or powershell)", args[0])
+			}
+		}),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			root, out := cmd.Root(), cmd.OutOrStdout()
+			switch args[0] {
+			case "bash":
+				return root.GenBashCompletionV2(out, true)
+			case "zsh":
+				return root.GenZshCompletion(out)
+			case "fish":
+				return root.GenFishCompletion(out, true)
+			default: // powershell
+				return root.GenPowerShellCompletionWithDesc(out)
+			}
+		},
+	}
+}
+
 func main() {
-	if err := newApp().Run(context.Background(), os.Args); err != nil {
+	if err := newApp().Execute(); err != nil {
 		os.Exit(1)
 	}
 }
