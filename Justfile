@@ -5,9 +5,9 @@ default:
 # compile a stripped release binary to ./pokego (~26 MB vs ~28 MB)
 version := `git describe --tags --always --dirty 2>/dev/null || echo dev`
 
-# Build the shelf binary
+# Build the pokego binary
 build:
-    @echo "Building shelf version: {{version}}"
+    @echo "Building pokego version: {{version}}"
     CGO_ENABLED=0 go build -trimpath -buildvcs=false -ldflags "-s -w -X main.version={{version}}" -o pokego .
 
 # clean all auto generated files and generate build
